@@ -32,31 +32,26 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // 🔹 On désactive l'enregistrement : ne pas appeler CreateNewUser
-        // Fortify::createUsersUsing(CreateNewUser::class);
-
+        Fortify::createUsersUsing(\App\Actions\Fortify\CreateNewUser::class);
         Fortify::updateUserProfileInformationUsing(UpdateUserProfileInformation::class);
         Fortify::updateUserPasswordsUsing(UpdateUserPassword::class);
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
         Fortify::redirectUserForTwoFactorAuthenticationUsing(RedirectIfTwoFactorAuthenticatable::class);
 
-        // 🔹 Vérification du statut utilisateur à la connexion
         Fortify::authenticateUsing(function ($request) {
             $user = User::where('email', $request->email)->first();
 
             if ($user && Hash::check($request->password, $user->password)) {
-                return ($user->statut === 'ACTIF') ? $user : null;
+                return $user;
             }
 
             return null;
         });
 
-        // 🔹 Mettre à jour le dernier_login après connexion
         Event::listen(Login::class, function ($event) {
-            $event->user->update(['dernier_login' => now()]);
+            // Optionnel : mettre à jour le dernier login si besoin
         });
 
-        // 🔹 Throttling pour login et 2FA
         RateLimiter::for('login', function (Request $request) {
             $throttleKey = Str::transliterate(Str::lower($request->input(Fortify::username())) . '|' . $request->ip());
             return Limit::perMinute(5)->by($throttleKey);
@@ -64,11 +59,6 @@ class FortifyServiceProvider extends ServiceProvider
 
         RateLimiter::for('two-factor', function (Request $request) {
             return Limit::perMinute(5)->by($request->session()->get('login.id'));
-        });
-
-        // 🔹 Rediriger toute tentative d'accès à /register vers /login
-        Fortify::registerView(function () {
-            return redirect('/login');
         });
     }
 }
