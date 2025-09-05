@@ -9,66 +9,63 @@ use Laravel\Fortify\TwoFactorAuthenticatable;
 use Laravel\Jetstream\HasProfilePhoto;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\SoftDeletes;
-
-// Ajouter Spatie Permission
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, HasProfilePhoto, Notifiable, TwoFactorAuthenticatable, HasRoles, SoftDeletes;
 
-    // Si tu veux utiliser le même nom de PK que ta table SQL
     protected $primaryKey = 'id';
     protected $keyType = 'int';
     public $incrementing = true;
 
-    /**
-     * Les attributs assignables en masse
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'name',
         'nom_utilisateur',
         'email',
-        'password',
+        'password',           // ✅ correspond bien à ta colonne
         'type_utilisateur',
         'statut',
-        'dernier_login',
         'date_creation',
+        'dernier_login',
     ];
 
-    /**
-     * Les attributs cachés pour la sérialisation
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
-        'password',
+        'password',           // ✅ colonne correcte
         'remember_token',
         'two_factor_recovery_codes',
         'two_factor_secret',
     ];
 
-    /**
-     * Les attributs à ajouter automatiquement au tableau
-     *
-     * @var array<int, string>
-     */
     protected $appends = [
         'profile_photo_url',
     ];
 
-    /**
-     * Casts des attributs
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'dernier_login' => 'datetime',
         'date_creation' => 'datetime',
+        'dernier_login' => 'datetime',
         'deleted_at' => 'datetime',
-        'password' => 'hashed',
     ];
+
+    protected $attributes = [
+        'statut' => 'ACTIF',
+        'type_utilisateur' => 'INTERNE',
+    ];
+
+    /**
+     * Mutateur pour hacher automatiquement le mot de passe
+     */
+    public function setPasswordAttribute($value)
+    {
+        if (!empty($value)) {
+            $this->attributes['password'] = bcrypt($value);
+        }
+    }
+
+
+
 }
+
+
+
