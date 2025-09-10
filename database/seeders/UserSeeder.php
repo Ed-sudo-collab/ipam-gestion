@@ -14,31 +14,39 @@ class UserSeeder extends Seeder
     {
         $guardName = 'web'; // Spécifier le guard
 
-        // ✅ Créer des rôles
-        $adminRole = Role::firstOrCreate(
-            ['name' => 'ADMIN', 'guard_name' => $guardName]
-        );
-        $userRole = Role::firstOrCreate(
-            ['name' => 'USER', 'guard_name' => $guardName]
-        );
-
-        // ✅ Créer des permissions (exemple)
+        // -----------------------------
+        // 1️⃣ Définir les permissions
+        // -----------------------------
         $permissions = [
-            'users.create',
-            'users.edit',
-            'users.delete',
-            'roles.manage',
-            'permissions.manage',
+            'create-users',
+            'edit-users',
+            'delete-users',
+            'view-users',
+            'manage-roles',
+            'manage-permissions',
         ];
 
         foreach ($permissions as $perm) {
             Permission::firstOrCreate(['name' => $perm, 'guard_name' => $guardName]);
         }
 
+        // -----------------------------
+        // 2️⃣ Créer les rôles
+        // -----------------------------
+        $adminRole = Role::firstOrCreate(
+            ['name' => 'ADMIN', 'guard_name' => $guardName]
+        );
+
+        $userRole = Role::firstOrCreate(
+            ['name' => 'USER', 'guard_name' => $guardName]
+        );
+
         // Attribuer toutes les permissions au rôle ADMIN
         $adminRole->syncPermissions(Permission::all());
 
-        // ✅ Créer des utilisateurs
+        // -----------------------------
+        // 3️⃣ Créer les utilisateurs
+        // -----------------------------
         $admin = User::firstOrCreate(
             ['email' => 'admin@example.com'],
             [
@@ -59,7 +67,9 @@ class UserSeeder extends Seeder
         );
         $user->assignRole($userRole);
 
-        // Créer d'autres utilisateurs fictifs
+        // -----------------------------
+        // 4️⃣ Créer des utilisateurs fictifs
+        // -----------------------------
         User::factory(5)->create()->each(function($u) use ($userRole) {
             $u->assignRole($userRole);
         });
