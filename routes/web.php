@@ -48,4 +48,5 @@ Route::middleware(['auth', IsActive::class, IsAdmin::class])
         // Permissions (à venir)
         // -----------------------------
         // Route::resource('permissions', PermissionController::class);
+        Route::get('permissions', fn() => view('admin.permissions.index'))->name('permissions.index');
     });
