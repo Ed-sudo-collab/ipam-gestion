@@ -1,92 +1,138 @@
 <div>
-    <h2 class="mb-4">Gestion des Utilisateurs</h2>
-
+    <!-- Message flash -->
     @if (session()->has('message'))
-        <div class="alert alert-success">{{ session('message') }}</div>
+        <div class="p-3 mb-4 text-green-700 bg-green-100 rounded-lg">
+            {{ session('message') }}
+        </div>
     @endif
 
-    <button class="mb-3 btn btn-primary" wire:click="openModal">Créer un utilisateur</button>
+    <!-- Bouton créer -->
+    <div class="flex justify-end mb-4">
+        <button wire:click="openModal"
+            class="px-4 py-2 text-white transition bg-indigo-600 rounded-lg shadow hover:bg-indigo-700">
+            + Créer un utilisateur
+        </button>
+    </div>
 
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Nom</th>
-                <th>Email</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($users as $user)
+    <!-- Tableau -->
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left text-gray-600 dark:text-gray-300">
+            <thead class="text-xs uppercase bg-gray-100 dark:bg-gray-700">
                 <tr>
-                    <td>{{ $user->id }}</td>
-                    <td>{{ $user->name }}</td>
-                    <td>{{ $user->email }}</td>
-                    <td>{{ $user->status }}</td>
-                    <td>
-                        <button class="btn btn-sm btn-info" wire:click="openModal({{ $user->id }})">Éditer</button>
-                        <button class="btn btn-sm btn-warning" wire:click="toggleStatus({{ $user->id }})">
-                            {{ $user->status === 'ACTIVE' ? 'Désactiver' : 'Activer' }}
-                        </button>
-                        <button class="btn btn-sm btn-danger" wire:click="blockUser({{ $user->id }})">Bloquer</button>
-                    </td>
+                    <th class="px-6 py-3">Nom</th>
+                    <th class="px-6 py-3">Email</th>
+                    <th class="px-6 py-3">Rôle</th>
+                    <th class="px-6 py-3">Statut</th>
+                    <th class="px-6 py-3 text-right">Actions</th>
                 </tr>
-            @endforeach
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @forelse ($users as $user)
+                    <tr class="transition border-b dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800">
+                        <td class="px-6 py-3">{{ $user->name }}</td>
+                        <td class="px-6 py-3">{{ $user->email }}</td>
+                        <td class="px-6 py-3">{{ $user->role?->name ?? '-' }}</td>
+                        <td class="px-6 py-3">
+                            <span class="px-2 py-1 text-xs rounded-full
+                                {{ $user->status === 'ACTIVE' ? 'bg-green-100 text-green-700' : ($user->status === 'INACTIVE' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700') }}">
+                                {{ $user->status }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-3 space-x-2 text-right">
+                            <button wire:click="openModal({{ $user->id }})"
+                                class="px-3 py-1 text-white bg-yellow-500 rounded hover:bg-yellow-600">Éditer</button>
+                            <button wire:click="toggleStatus({{ $user->id }})"
+                                class="px-3 py-1 text-white bg-blue-500 rounded hover:bg-blue-600">
+                                {{ $user->status === 'ACTIVE' ? 'Désactiver' : 'Activer' }}
+                            </button>
+                            <button wire:click="blockUser({{ $user->id }})"
+                                class="px-3 py-1 text-white bg-red-600 rounded hover:bg-red-700">Bloquer</button>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                            Aucun utilisateur trouvé.
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 
-    {{ $users->links() }}
+    <!-- Pagination -->
+    <div class="mt-4">
+        {{ $users->links() }}
+    </div>
 
     <!-- Modal -->
     @if($isModalOpen)
-        <div class="modal show d-block" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">{{ $userId ? 'Éditer' : 'Créer' }} Utilisateur</h5>
-                        <button type="button" class="close" wire:click="closeModal">&times;</button>
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div class="w-full max-w-lg p-6 bg-white rounded-lg shadow-lg dark:bg-gray-800">
+                <h2 class="mb-4 text-lg font-semibold">
+                    {{ $userId ? 'Éditer Utilisateur' : 'Créer Utilisateur' }}
+                </h2>
+
+                <form wire:submit.prevent="saveUser" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium">Nom</label>
+                        <input type="text" wire:model="name"
+                            class="w-full px-3 py-2 border rounded-lg focus:ring focus:ring-indigo-200 dark:bg-gray-700 dark:text-white">
+                        @error('name') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
                     </div>
-                    <div class="modal-body">
-                        <form wire:submit.prevent="saveUser">
-                            <div class="mb-3">
-                                <label>Nom</label>
-                                <input type="text" class="form-control" wire:model="name">
-                                @error('name') <span class="text-danger">{{ $message }}</span> @enderror
-                            </div>
 
-                            <div class="mb-3">
-                                <label>Email</label>
-                                <input type="email" class="form-control" wire:model="email">
-                                @error('email') <span class="text-danger">{{ $message }}</span> @enderror
-                            </div>
-
-                            <div class="mb-3">
-                                <label>Status</label>
-                                <select class="form-control" wire:model="status">
-                                    <option value="ACTIVE">ACTIVE</option>
-                                    <option value="INACTIVE">INACTIVE</option>
-                                    <option value="BLOCKED">BLOCKED</option>
-                                </select>
-                                @error('status') <span class="text-danger">{{ $message }}</span> @enderror
-                            </div>
-
-                            <div class="mb-3">
-                                <label>Password</label>
-                                <input type="password" class="form-control" wire:model="password">
-                                @error('password') <span class="text-danger">{{ $message }}</span> @enderror
-                            </div>
-
-                            <div class="mb-3">
-                                <label>Confirmer Password</label>
-                                <input type="password" class="form-control" wire:model="password_confirmation">
-                            </div>
-
-                            <button type="submit" class="btn btn-success">{{ $userId ? 'Mettre à jour' : 'Créer' }}</button>
-                            <button type="button" class="btn btn-secondary" wire:click="closeModal">Annuler</button>
-                        </form>
+                    <div>
+                        <label class="block text-sm font-medium">Email</label>
+                        <input type="email" wire:model="email"
+                            class="w-full px-3 py-2 border rounded-lg focus:ring focus:ring-indigo-200 dark:bg-gray-700 dark:text-white">
+                        @error('email') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
                     </div>
-                </div>
+
+                    <div>
+                        <label class="block text-sm font-medium">Rôle</label>
+                        <select wire:model="role_id"
+                            class="w-full px-3 py-2 border rounded-lg focus:ring focus:ring-indigo-200 dark:bg-gray-700 dark:text-white">
+                            <option value="">-- Sélectionner un rôle --</option>
+                            @foreach($roles as $role)
+                                <option value="{{ $role->id }}">{{ $role->name }}</option>
+                            @endforeach
+                        </select>
+                        @error('role_id') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium">Statut</label>
+                        <select wire:model="status"
+                            class="w-full px-3 py-2 border rounded-lg focus:ring focus:ring-indigo-200 dark:bg-gray-700 dark:text-white">
+                            <option value="ACTIVE">ACTIVE</option>
+                            <option value="INACTIVE">INACTIVE</option>
+                            <option value="BLOCKED">BLOCKED</option>
+                        </select>
+                        @error('status') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium">Mot de passe</label>
+                        <input type="password" wire:model="password"
+                            class="w-full px-3 py-2 border rounded-lg focus:ring focus:ring-indigo-200 dark:bg-gray-700 dark:text-white">
+                        @error('password') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium">Confirmer mot de passe</label>
+                        <input type="password" wire:model="password_confirmation"
+                            class="w-full px-3 py-2 border rounded-lg focus:ring focus:ring-indigo-200 dark:bg-gray-700 dark:text-white">
+                    </div>
+
+                    <div class="flex justify-end space-x-2">
+                        <button type="button" wire:click="closeModal"
+                            class="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400">Annuler</button>
+                        <button type="submit"
+                            class="px-4 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700">
+                            {{ $userId ? 'Mettre à jour' : 'Créer' }}
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     @endif

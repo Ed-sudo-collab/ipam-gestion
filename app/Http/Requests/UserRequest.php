@@ -34,6 +34,8 @@ class UserRequest extends FormRequest
             Rule::unique('users', 'email')->ignore($userId),
         ],
         'status' => 'required|in:ACTIVE,INACTIVE,BLOCKED',
+        'role_id' => 'required|exists:roles,id'
+
     ];
 
     // Password uniquement lors de la création
