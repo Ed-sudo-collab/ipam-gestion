@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Middleware\IsActive;
 use App\Http\Middleware\IsAdmin;
+use App\Http\Middleware\CheckPermission;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,19 +34,21 @@ Route::middleware(['auth', IsActive::class, IsAdmin::class])
         // -----------------------------
         // Utilisateurs
         // -----------------------------
-        Route::resource('users', UserController::class);
+        Route::resource('users', UserController::class)
+            ->middleware(CheckPermission::class . ':gestion.utilisateur');
+
         Route::patch('users/{user}/toggle-status', [UserController::class, 'toggleStatus'])
+            ->middleware(CheckPermission::class . ':gestion.utilisateur')
             ->name('users.toggle-status');
+
         Route::patch('users/{user}/block', [UserController::class, 'blockUser'])
+            ->middleware(CheckPermission::class . ':gestion.utilisateur')
             ->name('users.block');
 
         // -----------------------------
         // Rôles
         // -----------------------------
-        Route::resource('roles', RoleController::class);
+        Route::resource('roles', RoleController::class)
+            ->middleware(CheckPermission::class . ':gestion.utilisateur');
 
-        // -----------------------------
-        // Permissions (à venir)
-        // -----------------------------
-        // Route::resource('permissions', PermissionController::class);
 });

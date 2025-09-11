@@ -18,11 +18,11 @@
                     </x-nav-link>
 
 
-                @role('ADMIN')
-                    <x-nav-link href="{{ route('admin.users.index') }}" :active="request()->routeIs('admin.users.*')">
-                        {{ __('Utilisateurs') }}
-                    </x-nav-link>
-                @endrole
+                 @can('gestion.utilisateur')
+                 <x-nav-link href="{{ route('admin.users.index') }}" :active="request()->routeIs('admin.users.*')">
+                   {{ __('Utilisateurs') }}
+                  </x-nav-link>
+                @endcan
 
 
 
@@ -125,11 +125,7 @@
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
 
-       @role('ADMIN')
-    <x-nav-link href="{{ route('admin.users.index') }}" :active="request()->routeIs('admin.users.*')">
-        {{ __('Utilisateurs') }}
-    </x-nav-link>
-@endrole
+
 
 
 

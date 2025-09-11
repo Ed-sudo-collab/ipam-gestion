@@ -18,12 +18,8 @@ class UserSeeder extends Seeder
         // 1️⃣ Définir les permissions
         // -----------------------------
         $permissions = [
-            'create-users',
-            'edit-users',
-            'delete-users',
-            'view-users',
-            'manage-roles',
-            'manage-permissions',
+            'gestion.utilisateur',
+
         ];
 
         foreach ($permissions as $perm) {
@@ -37,8 +33,16 @@ class UserSeeder extends Seeder
             ['name' => 'ADMIN', 'guard_name' => $guardName]
         );
 
-        $userRole = Role::firstOrCreate(
-            ['name' => 'USER', 'guard_name' => $guardName]
+        $etudiantRole = Role::firstOrCreate(
+            ['name' => 'ETUDIANT', 'guard_name' => $guardName]
+        );
+
+        $secretaireRole = Role::firstOrCreate(
+            ['name' => 'SECRETAIRE', 'guard_name' => $guardName]
+        );
+
+        $comptableRole = Role::firstOrCreate(
+            ['name' => 'COMPTABLE', 'guard_name' => $guardName]
         );
 
         // Attribuer toutes les permissions au rôle ADMIN
@@ -53,6 +57,7 @@ class UserSeeder extends Seeder
                 'name' => 'Administrateur',
                 'password' => Hash::make('password123'),
                 'status' => 'ACTIVE',
+                'role_id'=> '1'
             ]
         );
         $admin->assignRole($adminRole);
@@ -65,13 +70,13 @@ class UserSeeder extends Seeder
                 'status' => 'ACTIVE',
             ]
         );
-        $user->assignRole($userRole);
+        $user->assignRole($secretaireRole);
 
         // -----------------------------
         // 4️⃣ Créer des utilisateurs fictifs
         // -----------------------------
-        User::factory(5)->create()->each(function($u) use ($userRole) {
-            $u->assignRole($userRole);
+        User::factory(5)->create()->each(function($u) use ($comptableRole) {
+            $u->assignRole($comptableRole);
         });
     }
 }
