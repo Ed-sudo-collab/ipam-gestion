@@ -28,3 +28,8 @@
         {{ $slot }}
     </div>
 </x-app-layout>
+
+
+
+
+

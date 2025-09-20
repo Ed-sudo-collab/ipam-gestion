@@ -12,14 +12,27 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        $guardName = 'web'; // Spécifier le guard
+        $guardName = 'web';
 
         // -----------------------------
         // 1️⃣ Définir les permissions
         // -----------------------------
         $permissions = [
+            // Gestion utilisateurs / rôles
             'gestion.utilisateur',
+            'gestion.roles',
 
+            // Gestion académique
+            'manage-levels',
+            'manage-programs',
+            'manage-academic-years',
+
+            // Gestion étudiants & inscriptions
+            'manage-students',
+            'manage-student-academics',
+            'manage-student-professionals',
+            'manage-student-documents',
+            'manage-enrollments',
         ];
 
         foreach ($permissions as $perm) {
@@ -29,24 +42,22 @@ class UserSeeder extends Seeder
         // -----------------------------
         // 2️⃣ Créer les rôles
         // -----------------------------
-        $adminRole = Role::firstOrCreate(
-            ['name' => 'ADMIN', 'guard_name' => $guardName]
-        );
-
-        $etudiantRole = Role::firstOrCreate(
-            ['name' => 'ETUDIANT', 'guard_name' => $guardName]
-        );
-
-        $secretaireRole = Role::firstOrCreate(
-            ['name' => 'SECRETAIRE', 'guard_name' => $guardName]
-        );
-
-        $comptableRole = Role::firstOrCreate(
-            ['name' => 'COMPTABLE', 'guard_name' => $guardName]
-        );
+        $adminRole = Role::firstOrCreate(['name' => 'ADMIN', 'guard_name' => $guardName]);
+        $etudiantRole = Role::firstOrCreate(['name' => 'ETUDIANT', 'guard_name' => $guardName]);
+        $secretaireRole = Role::firstOrCreate(['name' => 'SECRETAIRE', 'guard_name' => $guardName]);
+        $comptableRole = Role::firstOrCreate(['name' => 'COMPTABLE', 'guard_name' => $guardName]);
 
         // Attribuer toutes les permissions au rôle ADMIN
         $adminRole->syncPermissions(Permission::all());
+
+        // Permissions spécifiques au rôle Secrétaire
+        $secretaireRole->syncPermissions([
+            'manage-students',
+            'manage-student-academics',
+            'manage-student-professionals',
+            'manage-student-documents',
+            'manage-enrollments',
+        ]);
 
         // -----------------------------
         // 3️⃣ Créer les utilisateurs
@@ -57,23 +68,22 @@ class UserSeeder extends Seeder
                 'name' => 'Administrateur',
                 'password' => Hash::make('password123'),
                 'status' => 'ACTIVE',
-                'role_id'=> '1'
             ]
         );
         $admin->assignRole($adminRole);
 
-        $user = User::firstOrCreate(
-            ['email' => 'user@example.com'],
+        $secretaire = User::firstOrCreate(
+            ['email' => 'secretaire@example.com'],
             [
-                'name' => 'Utilisateur',
+                'name' => 'Secrétaire',
                 'password' => Hash::make('password123'),
                 'status' => 'ACTIVE',
             ]
         );
-        $user->assignRole($secretaireRole);
+        $secretaire->assignRole($secretaireRole);
 
         // -----------------------------
-        // 4️⃣ Créer des utilisateurs fictifs
+        // 4️⃣ Créer des utilisateurs fictifs (Comptable)
         // -----------------------------
         User::factory(5)->create()->each(function($u) use ($comptableRole) {
             $u->assignRole($comptableRole);

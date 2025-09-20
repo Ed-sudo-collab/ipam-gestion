@@ -18,11 +18,46 @@
                     </x-nav-link>
 
 
-                 @can('gestion.utilisateur')
+                @can('gestion.utilisateur')
                  <x-nav-link href="{{ route('admin.users.index') }}" :active="request()->routeIs('admin.users.*')">
                    {{ __('Utilisateurs') }}
                   </x-nav-link>
                 @endcan
+
+
+
+                @can('manage-programs')
+                 <x-nav-link href="{{ route('admin.programs.index') }}" :active="request()->routeIs('admin.programs.*')">
+                   {{ __('Gestion académiques') }}
+                  </x-nav-link>
+                @endcan
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

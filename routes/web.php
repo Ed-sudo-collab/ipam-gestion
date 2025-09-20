@@ -3,6 +3,9 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\LevelController;
+use App\Http\Controllers\Admin\ProgramController;
+use App\Http\Controllers\Admin\AcademicYearController;
 use App\Http\Middleware\IsActive;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\CheckPermission;
@@ -49,6 +52,27 @@ Route::middleware(['auth', IsActive::class, IsAdmin::class])
         // Rôles
         // -----------------------------
         Route::resource('roles', RoleController::class)
-            ->middleware(CheckPermission::class . ':gestion.utilisateur');
+            ->middleware(CheckPermission::class . ':gestion.roles');
 
-});
+        // -----------------------------
+        // Niveaux
+        // -----------------------------
+        Route::get('levels', [LevelController::class, 'index'])
+            ->middleware(CheckPermission::class . ':manage-levels')
+            ->name('levels.index');
+
+        // -----------------------------
+        // Programmes
+        // -----------------------------
+        Route::get('programs', [ProgramController::class, 'index'])
+            ->middleware(CheckPermission::class . ':manage-programs')
+            ->name('programs.index');
+
+        // -----------------------------
+        // Années académiques
+        // -----------------------------
+        Route::get('academic-years', [AcademicYearController::class, 'index'])
+            ->middleware(CheckPermission::class . ':manage-academic-years')
+            ->name('academicYears.index');
+    });
+
