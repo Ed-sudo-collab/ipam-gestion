@@ -7,11 +7,14 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Program extends Model
 {
-    protected $fillable = ['name', 'description', 'level_id'];
+    use HasFactory;
 
-    public function level()
+    protected $fillable = ['name', 'description'];
+
+    // Une formation a plusieurs niveaux
+    public function levels()
     {
-        return $this->belongsTo(Level::class);
+        return $this->hasMany(Level::class);
     }
 
     public function enrollments()
@@ -19,4 +22,3 @@ class Program extends Model
         return $this->hasMany(Enrollment::class);
     }
 }
-

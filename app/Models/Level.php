@@ -7,11 +7,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Level extends Model
 {
-    protected $fillable = ['name'];
+    use HasFactory;
 
-    public function programs()
+    protected $fillable = ['name', 'program_id'];
+
+    // Un niveau appartient à une formation
+    public function program()
     {
-        return $this->hasMany(Program::class);
+        return $this->belongsTo(Program::class);
     }
 }
-

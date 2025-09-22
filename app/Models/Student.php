@@ -9,20 +9,10 @@ class Student extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'user_id',
-        'matricule',
-        'nom',
-        'prenom',
-        'date_naissance',
-        'lieu_naissance',
-        'sexe',
-        'telephone',
-        'situation_matrimoniale',
-        'nombre_enfants',
-        'adresse',
-        'email_parent',
-        'statut_id',
+   protected $fillable = [
+        'user_id','matricule','nom','prenom','date_naissance','lieu_naissance',
+        'sexe','telephone','situation_matrimoniale','nombre_enfants',
+        'adresse','email','telephone_parent','statut_id'
     ];
 
     // Relations
