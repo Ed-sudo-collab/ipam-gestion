@@ -20,7 +20,7 @@
             <thead class="text-xs uppercase bg-gray-100">
                 <tr>
                     <th class="px-6 py-3">Nom</th>
-                    <th class="px-6 py-3">Niveau</th>
+                    <th class="px-6 py-3">Niveaux</th>
                     <th class="px-6 py-3">Description</th>
                     <th class="px-6 py-3 text-right">Actions</th>
                 </tr>
@@ -29,7 +29,9 @@
                 @forelse($programs as $program)
                     <tr class="border-b hover:bg-gray-50">
                         <td class="px-6 py-3">{{ $program->name }}</td>
-                        <td class="px-6 py-3">{{ $program->level->name }}</td>
+                        <td class="px-6 py-3">
+                            {{ $program->levels->pluck('name')->join(', ') }}
+                        </td>
                         <td class="px-6 py-3">{{ $program->description }}</td>
                         <td class="px-6 py-3 space-x-2 text-right">
                             <button wire:click="openModal({{ $program->id }})"
@@ -75,17 +77,16 @@
                     @error('name') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
                 </div>
 
-                <!-- Niveau -->
+                <!-- Niveaux multiples -->
                 <div>
-                    <label class="block text-sm font-medium">Niveau</label>
-                    <select wire:model.defer="level_id"
+                    <label class="block text-sm font-medium">Niveaux</label>
+                    <select wire:model.defer="level_ids" multiple
                         class="w-full px-3 py-2 border rounded-lg focus:ring focus:ring-indigo-200">
-                        <option value="">Sélectionner le niveau</option>
                         @foreach($levels as $level)
                             <option value="{{ $level->id }}">{{ $level->name }}</option>
                         @endforeach
                     </select>
-                    @error('level_id') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
+                    @error('level_ids') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
                 </div>
 
                 <!-- Description -->

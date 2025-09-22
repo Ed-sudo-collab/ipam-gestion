@@ -67,7 +67,7 @@ class UserSeeder extends Seeder
             [
                 'name' => 'Administrateur',
                 'password' => Hash::make('password123'),
-                'status' => 'ACTIVE',
+                'status' => 'ACTIVE'
             ]
         );
         $admin->assignRole($adminRole);

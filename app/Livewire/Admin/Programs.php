@@ -11,35 +11,30 @@ class Programs extends Component
 {
     use WithPagination;
 
-    public $name, $description, $level_id, $program_id;
+    public $name, $description, $level_ids = [], $program_id;
     public $search = '';
     public $isModalOpen = false;
 
     protected $rules = [
         'name' => 'required|string|max:100|unique:programs,name',
-        'level_id' => 'required|exists:levels,id',
+        'level_ids' => 'required|array|min:1',
+        'level_ids.*' => 'exists:levels,id',
         'description' => 'nullable|string',
     ];
 
     protected $paginationTheme = 'tailwind';
 
-    /**
-     * Rendu de la liste des programmes
-     */
     public function render()
     {
-        $programs = Program::where('name', 'like', '%'.$this->search.'%')
-                           ->orderBy('id','desc')
-                           ->paginate(10);
+        $programs = Program::where('name', 'like', '%' . $this->search . '%')
+            ->orderBy('id', 'desc')
+            ->paginate(10);
 
         $levels = Level::all();
 
         return view('livewire.admin.programs', compact('programs', 'levels'));
     }
 
-    /**
-     * Ouvrir le modal pour création ou édition
-     */
     public function openModal($id = null)
     {
         $this->resetInputFields();
@@ -50,7 +45,7 @@ class Programs extends Component
                 $this->program_id = $program->id;
                 $this->name = $program->name;
                 $this->description = $program->description;
-                $this->level_id = $program->level_id;
+                $this->level_ids = $program->levels->pluck('id')->toArray();
             } else {
                 session()->flash('message', 'Programme introuvable.');
                 return;
@@ -60,28 +55,19 @@ class Programs extends Component
         $this->isModalOpen = true;
     }
 
-    /**
-     * Fermer le modal
-     */
     public function closeModal()
     {
         $this->isModalOpen = false;
     }
 
-    /**
-     * Réinitialiser les champs du formulaire
-     */
     private function resetInputFields()
     {
         $this->name = '';
         $this->description = '';
-        $this->level_id = '';
+        $this->level_ids = [];
         $this->program_id = null;
     }
 
-    /**
-     * Créer ou mettre à jour un programme
-     */
     public function saveProgram()
     {
         $rules = $this->rules;
@@ -92,14 +78,16 @@ class Programs extends Component
 
         $this->validate($rules);
 
-        Program::updateOrCreate(
+        $program = Program::updateOrCreate(
             ['id' => $this->program_id],
             [
                 'name' => $this->name,
                 'description' => $this->description,
-                'level_id' => $this->level_id,
             ]
         );
+
+        // Attacher les niveaux sélectionnés
+        $program->levels()->sync($this->level_ids);
 
         session()->flash('message', $this->program_id ? 'Programme mis à jour.' : 'Programme créé avec succès.');
 
@@ -107,9 +95,6 @@ class Programs extends Component
         $this->resetInputFields();
     }
 
-    /**
-     * Supprimer un programme
-     */
     public function deleteProgram($id)
     {
         $program = Program::find($id);

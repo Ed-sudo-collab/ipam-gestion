@@ -11,14 +11,9 @@ class Program extends Model
 
     protected $fillable = ['name', 'description'];
 
-    // Une formation a plusieurs niveaux
     public function levels()
     {
-        return $this->hasMany(Level::class);
+        return $this->belongsToMany(Level::class, 'level_program', 'program_id', 'level_id');
     }
 
-    public function enrollments()
-    {
-        return $this->hasMany(Enrollment::class);
-    }
 }

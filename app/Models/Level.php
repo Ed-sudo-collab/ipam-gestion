@@ -9,11 +9,11 @@ class Level extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'program_id'];
+    protected $fillable = ['name'];
 
-    // Un niveau appartient à une formation
-    public function program()
+   public function programs()
     {
-        return $this->belongsTo(Program::class);
+        return $this->belongsToMany(Program::class, 'level_program', 'level_id', 'program_id');
     }
+
 }
