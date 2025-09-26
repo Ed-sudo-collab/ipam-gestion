@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\LevelController;
 use App\Http\Controllers\Admin\ProgramController;
 use App\Http\Controllers\Admin\AcademicYearController;
+use App\Http\Controllers\Admin\StudentController;
 use App\Http\Middleware\IsActive;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\CheckPermission;
@@ -28,7 +29,9 @@ Route::middleware(['auth', IsActive::class])
     })
     ->name('dashboard');
 
-// Routes Admin – accessible uniquement aux ADMIN et utilisateurs actifs
+// =========================
+// Routes Admin strictes (ADMIN ONLY)
+// =========================
 Route::middleware(['auth', IsActive::class, IsAdmin::class])
     ->prefix('admin')
     ->name('admin.')
@@ -75,4 +78,22 @@ Route::middleware(['auth', IsActive::class, IsAdmin::class])
             ->middleware(CheckPermission::class . ':manage-academic-years')
             ->name('academicYears.index');
     });
+
+// =========================
+// Routes accessibles à ADMIN + SECRETAIRE
+// =========================
+Route::middleware(['auth', IsActive::class, CheckPermission::class . ':manage-students'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+
+        // Liste des étudiants (Livewire Students)
+        Route::get('students', [StudentController::class, 'index'])
+            ->name('students.index');
+
+        // Page détail étudiant avec onglets / wizard (Livewire StudentShow)
+        Route::get('students/{student}', [StudentController::class, 'show'])
+            ->name('students.show');
+    });
+
 
