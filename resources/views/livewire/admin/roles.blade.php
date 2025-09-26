@@ -1,3 +1,4 @@
+{{-- filepath: c:\xampp\htdocs\ipam-gestion\resources\views\livewire\admin\roles.blade.php --}}
 <div>
     <!-- Message flash -->
     @if(session()->has('message'))
@@ -6,13 +7,9 @@
         </div>
     @endif
 
-    <!-- Bouton créer -->
-    <div class="flex justify-end mb-4">
-        <button wire:click="openModal"
-            class="px-4 py-2 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700">
-            + Créer un rôle
-        </button>
-    </div>
+    @php
+        $fixedRoles = ['ADMIN', 'ETUDIANT', 'SECRETAIRE', 'COMPTABLE'];
+    @endphp
 
     <!-- Tableau -->
     <div class="overflow-x-auto">
@@ -32,10 +29,12 @@
                                 class="px-3 py-1 text-white bg-yellow-500 rounded hover:bg-yellow-600">
                                 Éditer
                             </button>
-                            <button wire:click="deleteRole({{ $role->id }})"
-                                class="px-3 py-1 text-white bg-red-600 rounded hover:bg-red-700">
-                                Supprimer
-                            </button>
+                            @if(!in_array($role->name, $fixedRoles))
+                                <button wire:click="deleteRole({{ $role->id }})"
+                                    class="px-3 py-1 text-white bg-red-600 rounded hover:bg-red-700">
+                                    Supprimer
+                                </button>
+                            @endif
                         </td>
                     </tr>
                 @empty
@@ -67,7 +66,8 @@
                 <div>
                     <label class="block text-sm font-medium">Nom du rôle</label>
                     <input type="text" wire:model="name"
-                        class="w-full px-3 py-2 border rounded-lg focus:ring focus:ring-indigo-200">
+                        class="w-full px-3 py-2 border rounded-lg focus:ring focus:ring-indigo-200"
+                        @if($roleId && in_array($name, $fixedRoles)) disabled @endif>
                     @error('name') <span class="text-xs text-red-500">{{ $message }}</span> @enderror
                 </div>
 
@@ -91,12 +91,12 @@
                     </button>
                     <button type="submit"
                         class="px-4 py-2 text-white bg-green-600 rounded-lg hover:bg-green-700">
-                        {{ $roleId ? 'Mettre à jour' : 'Créer' }}
+                        Mettre à jour
                     </button>
                 </div>
             </form>
         </div>
     </div>
-@endif
+    @endif
 
 </div>

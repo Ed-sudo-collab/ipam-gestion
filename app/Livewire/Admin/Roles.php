@@ -12,8 +12,8 @@ class Roles extends Component
     use WithPagination;
 
     public $name, $roleId;
-    public $permissions = [];       // Permissions sélectionnées pour le rôle
-    public $allPermissions = [];    // Toutes les permissions disponibles
+    public $permissions = [];
+    public $allPermissions = [];
     public $isModalOpen = false;
 
     protected $rules = [
@@ -21,6 +21,9 @@ class Roles extends Component
     ];
 
     protected $paginationTheme = 'tailwind';
+
+    // Liste des rôles fixes
+    protected $fixedRoles = ['ADMIN', 'ETUDIANT', 'SECRETAIRE', 'COMPTABLE'];
 
     /**
      * Charger toutes les permissions au montage du composant
@@ -47,7 +50,7 @@ class Roles extends Component
         $this->resetInputFields();
 
         if ($id) {
-            $role = Role::find($id); // find au lieu de findOrFail pour éviter le 404
+            $role = Role::find($id);
             if ($role) {
                 $this->roleId = $role->id;
                 $this->name = $role->name;
@@ -81,43 +84,62 @@ class Roles extends Component
 
     /**
      * Créer ou mettre à jour un rôle et synchroniser ses permissions
+     * Empêche la création de nouveaux rôles et la modification du nom des rôles fixes
      */
     public function saveRole()
     {
+        // Empêcher la création de nouveaux rôles (seulement édition)
+        if (!$this->roleId) {
+            session()->flash('message', 'La création de nouveaux rôles est désactivée.');
+            $this->closeModal();
+            return;
+        }
+
         $rules = $this->rules;
 
-        if ($this->roleId) {
+        $role = Role::find($this->roleId);
+
+        // Si édition d'un rôle fixe, empêcher la modification du nom
+        if ($role && in_array($role->name, $this->fixedRoles)) {
+            $rules['name'] = 'required|string|in:' . $role->name;
+        } else {
             $rules['name'] = 'required|string|unique:roles,name,' . $this->roleId;
         }
 
         $this->validate($rules);
 
-        // Création ou mise à jour du rôle
-        $role = Role::updateOrCreate(
-            ['id' => $this->roleId],
-            ['name' => $this->name]
-        );
+        // Mise à jour du rôle (nom non modifiable pour les rôles fixes)
+        if ($role && in_array($role->name, $this->fixedRoles)) {
+            $role->name = $role->name; // nom inchangé
+        } else {
+            $role->name = $this->name;
+        }
+        $role->save();
 
-        // Synchroniser les permissions correctement
+        // Synchroniser les permissions
         if (!empty($this->permissions)) {
             $permissionsNames = Permission::whereIn('id', $this->permissions)->pluck('name')->toArray();
             $role->syncPermissions($permissionsNames);
         } else {
-            $role->syncPermissions([]); // retirer toutes les permissions si aucune sélectionnée
+            $role->syncPermissions([]);
         }
 
-        session()->flash('message', $this->roleId ? 'Rôle mis à jour.' : 'Rôle créé avec succès.');
-
+        session()->flash('message', 'Rôle mis à jour.');
         $this->closeModal();
         $this->resetInputFields();
     }
 
     /**
      * Supprimer un rôle
+     * Empêche la suppression des rôles fixes
      */
     public function deleteRole($id)
     {
-        $role = Role::find($id); // find au lieu de findOrFail pour éviter 404
+        $role = Role::find($id);
+        if ($role && in_array($role->name, $this->fixedRoles)) {
+            session()->flash('message', 'Ce rôle ne peut pas être supprimé.');
+            return;
+        }
         if ($role) {
             $role->delete();
             session()->flash('message', 'Rôle supprimé.');
