@@ -10,7 +10,8 @@ class StudentShow extends Component
     public $studentId;
     public $student;
 
-    public $activeTab = 'general'; // Onglets possibles : general, academic, professional, documents
+    public $mode = 'view'; // Modes : 'create', 'edit', 'view'
+    public $activeTab = 'general'; // Onglets : general, academic, professional, documents
 
     // Écouteurs pour rafraîchir les données ou changer d'onglet depuis les sous-composants
     protected $listeners = [
@@ -19,12 +20,23 @@ class StudentShow extends Component
     ];
 
     /**
-     * Initialisation du composant avec l'ID de l'étudiant
+     * Initialisation du composant
+     *
+     * @param int|null $studentId
+     * @param string $mode
      */
-    public function mount($studentId)
+    public function mount($studentId = null, $mode = 'view')
     {
-        $this->studentId = $studentId;
-        $this->loadStudent();
+        $this->mode = $mode;
+
+        if ($studentId) {
+            $this->studentId = $studentId;
+            $this->loadStudent();
+        } else {
+            // Création : nouveau modèle vide
+            $this->student = new Student();
+            $this->mode = 'create';
+        }
     }
 
     /**
@@ -32,15 +44,19 @@ class StudentShow extends Component
      */
     public function loadStudent()
     {
-        $this->student = Student::with([
-            'academic',       // relation 1:1 student_academics
-            'professional',   // relation 1:1 student_professionals
-            'documents'       // relation 1:N student_documents
-        ])->findOrFail($this->studentId);
+        if ($this->studentId) {
+            $this->student = Student::with([
+                'academic',       // relation 1:1 student_academics
+                'professional',   // relation 1:1 student_professionals
+                'documents'       // relation 1:N student_documents
+            ])->findOrFail($this->studentId);
+        }
     }
 
     /**
      * Changer l'onglet actif
+     *
+     * @param string $tab
      */
     public function setTab($tab)
     {
@@ -48,6 +64,16 @@ class StudentShow extends Component
         if (in_array($tab, $allowedTabs)) {
             $this->activeTab = $tab;
         }
+    }
+
+    /**
+     * Vérifie si les champs sont éditables
+     *
+     * @return bool
+     */
+    public function isEditable()
+    {
+        return in_array($this->mode, ['create', 'edit']);
     }
 
     /**
@@ -63,6 +89,8 @@ class StudentShow extends Component
      */
     public function render()
     {
-        return view('livewire.admin.student-show');
+        return view('livewire.admin.student-show', [
+            'isEditable' => $this->isEditable(),
+        ]);
     }
 }

@@ -87,11 +87,19 @@ Route::middleware(['auth', IsActive::class, CheckPermission::class . ':manage-st
     ->name('admin.')
     ->group(function () {
 
-        // Liste des étudiants (Livewire Students)
+        // Liste étudiants (Livewire Students)
         Route::get('students', [StudentController::class, 'index'])
             ->name('students.index');
 
-        // Page détail étudiant avec onglets / wizard (Livewire StudentShow)
+        // Création via wizard
+        Route::get('students/create', [StudentController::class, 'create'])
+            ->name('students.create');
+
+        // Edition via wizard
+        Route::get('students/{student}/edit', [StudentController::class, 'edit'])
+            ->name('students.edit');
+
+        // Détails (lecture seule) via wizard
         Route::get('students/{student}', [StudentController::class, 'show'])
             ->name('students.show');
     });

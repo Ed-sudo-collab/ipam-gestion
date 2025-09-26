@@ -20,4 +20,13 @@ class StudentController extends Controller
 
         return view('admin.students.student-show', compact('student')); // Vue parent Livewire
     }
+
+
+    public function create()
+{
+    return view('admin.students.create');
+}
+
+
+
 }
