@@ -1,4 +1,5 @@
 <?php
+// app/Http/Controllers/Admin/StudentController.php
 
 namespace App\Http\Controllers\Admin;
 
@@ -7,26 +8,26 @@ use App\Models\Student;
 
 class StudentController extends Controller
 {
-    // Liste étudiants
     public function index()
     {
-        return view('admin.students.index'); // Vue avec Livewire Students
+        return view('admin.students.index');
     }
 
-    // Détails étudiant
     public function show($studentId)
     {
         $student = Student::findOrFail($studentId);
-
-        return view('admin.students.student-show', compact('student')); // Vue parent Livewire
+        return view('admin.students.student-show', compact('student'));
     }
 
-
     public function create()
-{
-    return view('admin.students.create');
-}
+    {
+        // création pure — pas d'étudiant
+        return view('admin.students.create', ['studentId' => null]);
+    }
 
-
-
+    public function edit($studentId)
+    {
+        // en édition on fournit l'id au template afin que le composant Livewire charge les données
+        return view('admin.students.create', ['studentId' => $studentId]);
+    }
 }

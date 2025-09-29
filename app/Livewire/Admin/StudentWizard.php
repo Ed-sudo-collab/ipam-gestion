@@ -1,4 +1,5 @@
 <?php
+// app/Livewire/Admin/StudentWizard.php
 
 namespace App\Livewire\Admin;
 
@@ -8,6 +9,7 @@ use App\Models\Student;
 use App\Models\StudentAcademic;
 use App\Models\StudentProfessional;
 use App\Models\StudentDocument;
+use Illuminate\Validation\Rule;
 
 class StudentWizard extends Component
 {
@@ -15,41 +17,51 @@ class StudentWizard extends Component
 
     public $step = 1;
 
-    // Étape 1 - Infos générales
+    // Étape 1
     public $nom, $prenom, $date_naissance, $lieu_naissance, $sexe, $telephone, $email;
 
-    // Étape 2 - Académique
+    // Étape 2
     public $dernier_diplome, $etablissement, $annee_obtention, $mention;
 
-    // Étape 3 - Professionnel
+    // Étape 3
     public $profession_actuelle, $employeur, $experience;
 
-    // Étape 4 - Documents
-    public $documents = [];
+    // Étape 4
+    public $documents = [];           // nouveaux fichiers uploadés
+    public $existingDocuments = [];   // fichiers déjà en BDD
 
     public $mode = 'create';
     public $studentId;
     public $student;
+
+    protected $listeners = ['refreshStudent' => 'loadStudent'];
 
     public function mount($studentId = null)
     {
         $this->studentId = $studentId;
 
         if ($this->studentId) {
-            $this->loadStudent();
             $this->mode = 'edit';
+            $this->loadStudent();
         }
+    }
+
+    protected function rulesStep1()
+    {
+        return [
+            'nom' => 'required|string|max:255',
+            'prenom' => 'required|string|max:255',
+            'email' => [
+                'required','email','max:255',
+                Rule::unique('students','email')->ignore($this->studentId)
+            ],
+        ];
     }
 
     protected function validateStep()
     {
         if ($this->step == 1) {
-            $rules = [
-                'nom' => 'required|string|max:255',
-                'prenom' => 'required|string|max:255',
-                'email' => 'required|email|unique:students,email' . ($this->studentId ? ',' . $this->studentId : ''),
-            ];
-            $this->validate($rules);
+            $this->validate($this->rulesStep1());
         }
 
         if ($this->step == 2) {
@@ -71,7 +83,7 @@ class StudentWizard extends Component
 
         if ($this->step == 4) {
             $this->validate([
-                'documents.*' => 'file|max:5120', // max 5MB
+                'documents.*' => 'file|max:5120',
             ]);
         }
     }
@@ -84,11 +96,12 @@ class StudentWizard extends Component
 
     public function prevStep()
     {
-        $this->step--;
+        $this->step = max(1, $this->step - 1);
     }
 
     public function save()
     {
+        // validation finale
         $this->validateStep();
 
         if ($this->mode === 'create') {
@@ -102,7 +115,7 @@ class StudentWizard extends Component
                 'sexe' => $this->sexe,
                 'telephone' => $this->telephone,
                 'email' => $this->email,
-                'statut_id' => 1, // par défaut
+                'statut_id' => 1,
             ]);
         } else {
             $student = Student::findOrFail($this->studentId);
@@ -117,28 +130,33 @@ class StudentWizard extends Component
             ]);
         }
 
-        // Académique
-        $student->academic()->updateOrCreate([], [
-            'dernier_diplome' => $this->dernier_diplome,
-            'etablissement' => $this->etablissement,
-            'annee_obtention' => $this->annee_obtention,
-            'mention' => $this->mention,
-        ]);
+        // académique
+        $student->academic()->updateOrCreate(
+            ['student_id' => $student->id],
+            [
+                'dernier_diplome' => $this->dernier_diplome,
+                'etablissement' => $this->etablissement,
+                'annee_obtention' => $this->annee_obtention,
+                'mention' => $this->mention,
+            ]
+        );
 
-        // Professionnel
-        $student->professional()->updateOrCreate([], [
-            'profession_actuelle' => $this->profession_actuelle,
-            'employeur' => $this->employeur,
-            'experience' => $this->experience,
-        ]);
+        // professionnel
+        $student->professional()->updateOrCreate(
+            ['student_id' => $student->id],
+            [
+                'profession_actuelle' => $this->profession_actuelle,
+                'employeur' => $this->employeur,
+                'experience' => $this->experience,
+            ]
+        );
 
-        // Documents
+        // documents (nouveaux)
         foreach ($this->documents as $file) {
             $storedPath = $file->store('students', 'public');
-
             StudentDocument::create([
                 'student_id' => $student->id,
-                'path' => $storedPath, // <-- obligatoire
+                'path' => $storedPath,
                 'filename' => $file->getClientOriginalName(),
             ]);
         }
@@ -152,30 +170,40 @@ class StudentWizard extends Component
     {
         $this->student = Student::with(['academic', 'professional', 'documents'])->find($this->studentId);
 
-        if ($this->student) {
-            $this->nom = $this->student->nom;
-            $this->prenom = $this->student->prenom;
-            $this->date_naissance = $this->student->date_naissance;
-            $this->lieu_naissance = $this->student->lieu_naissance;
-            $this->sexe = $this->student->sexe;
-            $this->telephone = $this->student->telephone;
-            $this->email = $this->student->email;
-
-            if ($this->student->academic) {
-                $this->dernier_diplome = $this->student->academic->dernier_diplome;
-                $this->etablissement = $this->student->academic->etablissement;
-                $this->annee_obtention = $this->student->academic->annee_obtention;
-                $this->mention = $this->student->academic->mention;
-            }
-
-            if ($this->student->professional) {
-                $this->profession_actuelle = $this->student->professional->profession_actuelle;
-                $this->employeur = $this->student->professional->employeur;
-                $this->experience = $this->student->professional->experience;
-            }
-
-            $this->documents = $this->student->documents->map(fn($d) => $d->path)->toArray();
+        if (! $this->student) {
+            return;
         }
+
+        // étape 1
+        $this->nom = $this->student->nom;
+        $this->prenom = $this->student->prenom;
+        $this->date_naissance = $this->student->date_naissance;
+        $this->lieu_naissance = $this->student->lieu_naissance;
+        $this->sexe = $this->student->sexe;
+        $this->telephone = $this->student->telephone;
+        $this->email = $this->student->email;
+
+        // étape 2
+        if ($this->student->academic) {
+            $this->dernier_diplome = $this->student->academic->dernier_diplome;
+            $this->etablissement = $this->student->academic->etablissement;
+            $this->annee_obtention = $this->student->academic->annee_obtention;
+            $this->mention = $this->student->academic->mention;
+        }
+
+        // étape 3
+        if ($this->student->professional) {
+            $this->profession_actuelle = $this->student->professional->profession_actuelle;
+            $this->employeur = $this->student->professional->employeur;
+            $this->experience = $this->student->professional->experience;
+        }
+
+        // étape 4 (existants)
+        $this->existingDocuments = $this->student->documents->map(fn($d) => [
+            'id' => $d->id,
+            'path' => $d->path,
+            'filename' => $d->filename,
+        ])->toArray();
     }
 
     public function render()

@@ -55,7 +55,7 @@ class UserSeeder extends Seeder
          'manage-students',
          'manage-student-academics',
          'manage-student-professionals',
-         'manage-student-documents',
+            'manage-student-documents',
          'manage-enrollments',
      ]);
 

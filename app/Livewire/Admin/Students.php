@@ -44,6 +44,9 @@ class Students extends Component
         return redirect()->route('admin.students.show', $id);
     }
 
+
+
+
     // Suppression
     public function delete($id)
     {

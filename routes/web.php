@@ -7,9 +7,11 @@ use App\Http\Controllers\Admin\LevelController;
 use App\Http\Controllers\Admin\ProgramController;
 use App\Http\Controllers\Admin\AcademicYearController;
 use App\Http\Controllers\Admin\StudentController;
+use App\Http\Controllers\Admin\StudentStatutController;
 use App\Http\Middleware\IsActive;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\CheckPermission;
+use App\Models\StudentStatut;
 
 /*
 |--------------------------------------------------------------------------
@@ -77,6 +79,11 @@ Route::middleware(['auth', IsActive::class, IsAdmin::class])
         Route::get('academic-years', [AcademicYearController::class, 'index'])
             ->middleware(CheckPermission::class . ':manage-academic-years')
             ->name('academicYears.index');
+
+
+        Route::get('student-statut', [StudentStatutController::class, 'index'])
+            ->name('studentStatut.index');
+
     });
 
 // =========================

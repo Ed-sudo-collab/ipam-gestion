@@ -59,7 +59,7 @@
             </div>
             <div class="flex justify-between mt-6">
                 <span></span>
-                <button type="button" wire:click="nextStep" class="px-6 py-2 text-white bg-indigo-600 rounded hover:bg-indigo-700">Suivant ➡️</button>
+                <button type="button" wire:click="nextStep" class="px-6 py-2 text-white bg-indigo-600 rounded hover:bg-indigo-700">Suivant </button>
             </div>
         @endif
 

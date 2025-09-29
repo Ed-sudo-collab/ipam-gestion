@@ -32,10 +32,12 @@
                         <td class="px-4 py-2">{{ $student->telephone }}</td>
                         <td class="px-4 py-2 space-x-2">
                             {{-- Edition wizard --}}
+                            <!-- dans resources/views/livewire/admin/students.blade.php -->
                             <a href="{{ route('admin.students.edit', $student->id) }}"
-                               class="px-2 py-1 text-white bg-yellow-500 rounded hover:bg-yellow-600">
+                            class="px-2 py-1 text-white bg-yellow-500 rounded hover:bg-yellow-600">
                                 Modifier
                             </a>
+
 
                             {{-- Lecture seule wizard --}}
                             <a href="{{ route('admin.students.show', $student->id) }}"
