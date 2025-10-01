@@ -1,5 +1,4 @@
 <?php
-// app/Livewire/Admin/StudentWizard.php
 
 namespace App\Livewire\Admin;
 
@@ -17,18 +16,20 @@ class StudentWizard extends Component
 
     public $step = 1;
 
-    // Étape 1
-    public $nom, $prenom, $date_naissance, $lieu_naissance, $sexe, $telephone, $email;
+    // Étape 1 - Informations générales
+    public $nom, $prenom, $matricule, $date_naissance, $lieu_naissance, $sexe, $telephone, $email;
+    public $situation_matrimoniale, $nombre_enfants, $adresse, $telephone_parent;
 
-    // Étape 2
-    public $dernier_diplome, $etablissement, $annee_obtention, $mention;
+    // Étape 2 - Informations académiques
+    public $dernier_diplome, $etablissement, $annee_obtention, $mention, $path_diplome, $path_releves;
+    public $diplome_file, $releves_file;
 
-    // Étape 3
+    // Étape 3 - Informations professionnelles
     public $profession_actuelle, $employeur, $experience;
 
-    // Étape 4
-    public $documents = [];           // nouveaux fichiers uploadés
-    public $existingDocuments = [];   // fichiers déjà en BDD
+    // Étape 4 - Documents
+    public $documents = [];
+    public $existingDocuments = [];
 
     public $mode = 'create';
     public $studentId;
@@ -55,37 +56,51 @@ class StudentWizard extends Component
                 'required','email','max:255',
                 Rule::unique('students','email')->ignore($this->studentId)
             ],
+            'telephone' => 'nullable|string|max:20',
+            'situation_matrimoniale' => 'nullable|string|max:50',
+            'nombre_enfants' => 'nullable|integer|min:0',
+            'adresse' => 'nullable|string|max:255',
+            'telephone_parent' => 'nullable|string|max:20',
+            'date_naissance' => 'nullable|date',
+            'lieu_naissance' => 'nullable|string|max:255',
+            'sexe' => 'nullable|in:M,F',
+        ];
+    }
+
+    protected function rulesStep2()
+    {
+        return [
+            'dernier_diplome' => 'nullable|string|max:255',
+            'etablissement' => 'nullable|string|max:255',
+            'annee_obtention' => 'nullable|integer|digits:4',
+            'mention' => 'nullable|string|max:255',
+            'diplome_file' => 'nullable|file|max:5120',
+            'releves_file' => 'nullable|file|max:5120',
+        ];
+    }
+
+    protected function rulesStep3()
+    {
+        return [
+            'profession_actuelle' => 'nullable|string|max:255',
+            'employeur' => 'nullable|string|max:255',
+            'experience' => 'nullable|string',
+        ];
+    }
+
+    protected function rulesStep4()
+    {
+        return [
+            'documents.*' => 'file|max:5120',
         ];
     }
 
     protected function validateStep()
     {
-        if ($this->step == 1) {
-            $this->validate($this->rulesStep1());
-        }
-
-        if ($this->step == 2) {
-            $this->validate([
-                'dernier_diplome' => 'nullable|string|max:255',
-                'etablissement' => 'nullable|string|max:255',
-                'annee_obtention' => 'nullable|date',
-                'mention' => 'nullable|string|max:255',
-            ]);
-        }
-
-        if ($this->step == 3) {
-            $this->validate([
-                'profession_actuelle' => 'nullable|string|max:255',
-                'employeur' => 'nullable|string|max:255',
-                'experience' => 'nullable|string',
-            ]);
-        }
-
-        if ($this->step == 4) {
-            $this->validate([
-                'documents.*' => 'file|max:5120',
-            ]);
-        }
+        if ($this->step == 1) $this->validate($this->rulesStep1());
+        if ($this->step == 2) $this->validate($this->rulesStep2());
+        if ($this->step == 3) $this->validate($this->rulesStep3());
+        if ($this->step == 4) $this->validate($this->rulesStep4());
     }
 
     public function nextStep()
@@ -101,13 +116,14 @@ class StudentWizard extends Component
 
     public function save()
     {
-        // validation finale
+        // Validation finale
         $this->validateStep();
 
+        // Étudiant
         if ($this->mode === 'create') {
             $student = Student::create([
                 'user_id' => auth()->id(),
-                'matricule' => 'MAT-' . time(),
+                'matricule' => $this->matricule ?? 'MAT-' . time(),
                 'nom' => $this->nom,
                 'prenom' => $this->prenom,
                 'date_naissance' => $this->date_naissance,
@@ -115,6 +131,10 @@ class StudentWizard extends Component
                 'sexe' => $this->sexe,
                 'telephone' => $this->telephone,
                 'email' => $this->email,
+                'situation_matrimoniale' => $this->situation_matrimoniale,
+                'nombre_enfants' => $this->nombre_enfants ?? 0,
+                'adresse' => $this->adresse,
+                'telephone_parent' => $this->telephone_parent,
                 'statut_id' => 1,
             ]);
         } else {
@@ -127,21 +147,34 @@ class StudentWizard extends Component
                 'sexe' => $this->sexe,
                 'telephone' => $this->telephone,
                 'email' => $this->email,
+                'situation_matrimoniale' => $this->situation_matrimoniale,
+                'nombre_enfants' => $this->nombre_enfants,
+                'adresse' => $this->adresse,
+                'telephone_parent' => $this->telephone_parent,
             ]);
         }
 
-        // académique
+        // Académique
+        $academicData = [
+            'dernier_diplome' => $this->dernier_diplome,
+            'etablissement' => $this->etablissement,
+            'annee_obtention' => $this->annee_obtention,
+            'mention' => $this->mention,
+        ];
+
+        if ($this->diplome_file) {
+            $academicData['path_diplome'] = $this->diplome_file->store('students/diplomes', 'public');
+        }
+        if ($this->releves_file) {
+            $academicData['path_releves'] = $this->releves_file->store('students/releves', 'public');
+        }
+
         $student->academic()->updateOrCreate(
             ['student_id' => $student->id],
-            [
-                'dernier_diplome' => $this->dernier_diplome,
-                'etablissement' => $this->etablissement,
-                'annee_obtention' => $this->annee_obtention,
-                'mention' => $this->mention,
-            ]
+            $academicData
         );
 
-        // professionnel
+        // Professionnel
         $student->professional()->updateOrCreate(
             ['student_id' => $student->id],
             [
@@ -151,58 +184,50 @@ class StudentWizard extends Component
             ]
         );
 
-        // documents (nouveaux)
+        // Documents supplémentaires
         foreach ($this->documents as $file) {
-            $storedPath = $file->store('students', 'public');
+            $storedPath = $file->store('students/documents', 'public');
             StudentDocument::create([
                 'student_id' => $student->id,
                 'path' => $storedPath,
-                'filename' => $file->getClientOriginalName(),
+                'type_document' => 'autre',
             ]);
         }
 
         session()->flash('message', 'Étudiant enregistré avec succès ✅');
-
         return redirect()->route('admin.students.show', $student->id);
     }
 
     public function loadStudent()
     {
         $this->student = Student::with(['academic', 'professional', 'documents'])->find($this->studentId);
+        if (!$this->student) return;
 
-        if (! $this->student) {
-            return;
+        // Étape 1
+        foreach (['nom','prenom','matricule','date_naissance','lieu_naissance','sexe','telephone','email','situation_matrimoniale','nombre_enfants','adresse','telephone_parent'] as $field) {
+            $this->$field = $this->student->$field;
         }
 
-        // étape 1
-        $this->nom = $this->student->nom;
-        $this->prenom = $this->student->prenom;
-        $this->date_naissance = $this->student->date_naissance;
-        $this->lieu_naissance = $this->student->lieu_naissance;
-        $this->sexe = $this->student->sexe;
-        $this->telephone = $this->student->telephone;
-        $this->email = $this->student->email;
-
-        // étape 2
+        // Étape 2
         if ($this->student->academic) {
-            $this->dernier_diplome = $this->student->academic->dernier_diplome;
-            $this->etablissement = $this->student->academic->etablissement;
-            $this->annee_obtention = $this->student->academic->annee_obtention;
-            $this->mention = $this->student->academic->mention;
+            foreach (['dernier_diplome','etablissement','annee_obtention','mention','path_diplome','path_releves'] as $field) {
+                $this->$field = $this->student->academic->$field;
+            }
         }
 
-        // étape 3
+        // Étape 3
         if ($this->student->professional) {
-            $this->profession_actuelle = $this->student->professional->profession_actuelle;
-            $this->employeur = $this->student->professional->employeur;
-            $this->experience = $this->student->professional->experience;
+            foreach (['profession_actuelle','employeur','experience'] as $field) {
+                $this->$field = $this->student->professional->$field;
+            }
         }
 
-        // étape 4 (existants)
+        // Étape 4
         $this->existingDocuments = $this->student->documents->map(fn($d) => [
             'id' => $d->id,
             'path' => $d->path,
-            'filename' => $d->filename,
+            'filename' => basename($d->path),
+            'type_document' => $d->type_document,
         ])->toArray();
     }
 

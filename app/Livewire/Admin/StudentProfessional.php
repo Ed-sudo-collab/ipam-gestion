@@ -3,46 +3,44 @@
 namespace App\Livewire\Admin;
 
 use Livewire\Component;
-use App\Models\StudentProfessional as StudentProfessionalModel; // Alias pour éviter le conflit
+use App\Models\StudentProfessional as StudentProfessionalModel;
 
 class StudentProfessional extends Component
 {
     public $student;
     public $professional;
 
-    public $profession, $employeur, $experience;
+    // Champs pour le formulaire
+    public $profession_actuelle, $employeur, $experience;
 
     public function mount($student)
     {
         $this->student = $student;
-        // On utilise l'alias du modèle pour éviter le conflit avec le composant
         $this->professional = $student->professional ?? new StudentProfessionalModel();
         $this->fillFields();
     }
 
     public function fillFields()
     {
-        // Vérifie si le modèle existe en base avant de remplir les champs
         if ($this->professional && $this->professional->getKey()) {
-            $this->profession = $this->professional->profession;
-            $this->employeur  = $this->professional->employeur;
-            $this->experience = $this->professional->experience;
+            $this->profession_actuelle = $this->professional->profession;
+            $this->employeur          = $this->professional->employeur;
+            $this->experience         = $this->professional->experience;
         }
     }
 
     public function save()
     {
         $this->validate([
-            'profession' => 'required|string|max:150',
-            'employeur'  => 'nullable|string|max:150',
-            'experience' => 'nullable|string|max:1000',
+            'profession_actuelle' => 'required|string|max:150',
+            'employeur'           => 'nullable|string|max:150',
+            'experience'          => 'nullable|string|max:1000',
         ]);
 
-        // Création ou mise à jour de la relation professionnelle
         $this->professional = $this->student->professional()->updateOrCreate(
             ['student_id' => $this->student->id],
             [
-                'profession' => $this->profession,
+                'profession' => $this->profession_actuelle,
                 'employeur'  => $this->employeur,
                 'experience' => $this->experience,
             ]
