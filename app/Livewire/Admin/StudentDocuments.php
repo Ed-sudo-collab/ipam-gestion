@@ -12,7 +12,18 @@ class StudentDocuments extends Component
 
     public $student;
     public $documents;
-    public $newDocument, $type;
+    public $newDocument;
+    public $type_document;
+
+    // Types autorisés pour la validation
+    protected $allowedTypes = [
+        'acte_naissance',
+        'diplome',
+        'lettre_motivation',
+        'cv',
+        'photo',
+        'cni',
+    ];
 
     public function mount($student)
     {
@@ -28,19 +39,21 @@ class StudentDocuments extends Component
     public function upload()
     {
         $this->validate([
-            'newDocument' => 'required|file|max:5120',
-            'type' => 'required|string|max:100',
+            'newDocument' => 'required|file|max:5120', // 5MB max
+            'type_document' => 'required|in:' . implode(',', $this->allowedTypes),
         ]);
 
         $filePath = $this->newDocument->store('student_documents');
 
         $this->student->documents()->create([
-            'type' => $this->type,
-            'file_path' => $filePath,
+            'type_document' => $this->type_document,
+            'path' => $filePath,
         ]);
 
+        // Réinitialisation des champs
         $this->newDocument = null;
-        $this->type = null;
+        $this->type_document = null;
+
         $this->loadDocuments();
 
         session()->flash('message', 'Document ajouté ✅');
@@ -49,7 +62,7 @@ class StudentDocuments extends Component
     public function delete($id)
     {
         $doc = StudentDocument::findOrFail($id);
-        \Storage::delete($doc->file_path);
+        \Storage::delete($doc->path);
         $doc->delete();
 
         $this->loadDocuments();

@@ -13,16 +13,13 @@
             <tbody>
                 @foreach($student->documents as $doc)
                     <tr class="border-t">
-                        <td class="px-4 py-2">{{ $doc->type }}</td>
-                        <td class="px-4 py-2">{{ $doc->filename }}</td>
+                        <!-- Affiche une dénomination lisible en remplaçant les underscores par des espaces et capitalisant -->
+                        <td class="px-4 py-2">{{ ucfirst(str_replace('_', ' ', $doc->type_document)) }}</td>
+                        <td class="px-4 py-2">{{ basename($doc->path) }}</td>
                         <td class="px-4 py-2 space-x-2">
-                            <a href="{{ asset('storage/'.$doc->path) }}" target="_blank"
+                            <a href="{{ asset('storage/' . $doc->path) }}" target="_blank"
                                class="px-2 py-1 text-white bg-blue-600 rounded hover:bg-blue-700">Voir</a>
-                            <button wire:click="delete({{ $doc->id }})"
-                                    onclick="return confirm('Supprimer ce document ?')"
-                                    class="px-2 py-1 text-white bg-red-600 rounded hover:bg-red-700">
-                                Supprimer
-                            </button>
+
                         </td>
                     </tr>
                 @endforeach

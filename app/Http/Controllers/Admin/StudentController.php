@@ -22,12 +22,13 @@ class StudentController extends Controller
     public function create()
     {
         // création pure — pas d'étudiant
-        return view('admin.students.create', ['studentId' => null]);
+        return view('admin.students.create', ['$studentId' => null]);
     }
 
     public function edit($studentId)
     {
-        // en édition on fournit l'id au template afin que le composant Livewire charge les données
-        return view('admin.students.create', ['studentId' => $studentId]);
+        $student = Student::findOrFail($studentId);
+        return view('admin.students.edit', compact('student'));
     }
+
 }

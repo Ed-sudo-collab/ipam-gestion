@@ -15,6 +15,9 @@ class StudentDocument extends Model
         'path',
     ];
 
+    /**
+     * Relation vers l'étudiant
+     */
     public function student()
     {
         return $this->belongsTo(Student::class);

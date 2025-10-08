@@ -3,6 +3,7 @@
     <div class="flex items-center justify-between mb-4">
         <input type="text" wire:model="search" placeholder="Rechercher..."
                class="px-3 py-2 border rounded-lg" />
+
         <a href="{{ route('admin.students.create') }}"
            class="px-4 py-2 text-white bg-indigo-600 rounded hover:bg-indigo-700">
             + Ajouter un étudiant
@@ -19,6 +20,7 @@
                     <th class="px-4 py-2">Prénom</th>
                     <th class="px-4 py-2">Email</th>
                     <th class="px-4 py-2">Téléphone</th>
+                    <th class="px-4 py-2">Statut</th> {{-- ✅ nouvelle colonne --}}
                     <th class="px-4 py-2">Actions</th>
                 </tr>
             </thead>
@@ -30,14 +32,35 @@
                         <td class="px-4 py-2">{{ $student->prenom }}</td>
                         <td class="px-4 py-2">{{ $student->email }}</td>
                         <td class="px-4 py-2">{{ $student->telephone }}</td>
+
+                        {{-- ✅ Colonne statut avec badge coloré --}}
+                        <td class="px-4 py-2">
+                            @if($student->statut)
+                                @php
+                                    $colors = [
+                                        'Préinscrit' => 'bg-yellow-100 text-yellow-800',
+                                        'Inscrit' => 'bg-green-100 text-green-800',
+                                        'En attente' => 'bg-orange-100 text-orange-800',
+                                        'Suspendu' => 'bg-red-100 text-red-800',
+                                        'Abandonné' => 'bg-gray-100 text-gray-800',
+                                    ];
+                                    $color = $colors[$student->statut->libelle] ?? 'bg-gray-100 text-gray-800';
+                                @endphp
+                                <span class="px-2 py-1 text-xs font-semibold rounded {{ $color }}">
+                                    {{ $student->statut->libelle }}
+                                </span>
+                            @else
+                                <span class="px-2 py-1 text-xs text-gray-500 bg-gray-100 rounded">N/A</span>
+                            @endif
+                        </td>
+
+                        {{-- Actions --}}
                         <td class="px-4 py-2 space-x-2">
                             {{-- Edition wizard --}}
-                            <!-- dans resources/views/livewire/admin/students.blade.php -->
                             <a href="{{ route('admin.students.edit', $student->id) }}"
-                            class="px-2 py-1 text-white bg-yellow-500 rounded hover:bg-yellow-600">
+                               class="px-2 py-1 text-white bg-yellow-500 rounded hover:bg-yellow-600">
                                 Modifier
                             </a>
-
 
                             {{-- Lecture seule wizard --}}
                             <a href="{{ route('admin.students.show', $student->id) }}"
@@ -54,7 +77,9 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="px-4 py-2 text-center text-gray-500">Aucun étudiant trouvé</td>
+                        <td colspan="7" class="px-4 py-2 text-center text-gray-500">
+                            Aucun étudiant trouvé
+                        </td>
                     </tr>
                 @endforelse
             </tbody>

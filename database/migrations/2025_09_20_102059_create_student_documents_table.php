@@ -14,11 +14,20 @@ return new class extends Migration
         Schema::create('student_documents', function (Blueprint $table) {
             $table->id();
             $table->foreignId('student_id')->constrained()->onDelete('cascade');
-            $table->enum('type_document', ['acte_naissance','diplome','releves','lettre_motivation','cv','photo','cni']);
-            $table->string('path');
+
+            // Types de documents autorisés
+            $table->enum('type_document', [
+                'acte_naissance',          // Copie de l'acte de naissance ou jugement supplétif
+                'diplome',                 // Copie légalisée du diplôme ou attestation de réussite
+                'lettre_motivation',       // Lettre de motivation
+                'cv',                      // Curriculum vitae
+                'photo',                   // Photo d'identité récente
+                'cni',                     // Photocopie de la pièce d'identité
+            ]);
+
+            $table->string('path'); // Chemin du fichier stocké
             $table->timestamps();
         });
-
     }
 
     /**

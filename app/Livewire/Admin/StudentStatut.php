@@ -24,10 +24,20 @@ class StudentStatut extends Component
 
         if ($this->isEditing) {
             $statut = StudentStatutModel::findOrFail($this->statutId);
+
+            if (!$statut->modifiable) {
+                session()->flash('message', '⛔ Ce statut système ne peut pas être modifié.');
+                return;
+            }
+
             $statut->update(['libelle' => $this->libelle]);
             session()->flash('message', 'Statut mis à jour ✅');
         } else {
-            StudentStatutModel::create(['libelle' => $this->libelle]);
+            StudentStatutModel::create([
+                'libelle' => $this->libelle,
+                'type' => 'personnalisé',
+                'modifiable' => true,
+            ]);
             session()->flash('message', 'Statut ajouté ✅');
         }
 
@@ -44,7 +54,14 @@ class StudentStatut extends Component
 
     public function delete($id)
     {
-        StudentStatutModel::findOrFail($id)->delete();
+        $statut = StudentStatutModel::findOrFail($id);
+
+        if (!$statut->modifiable) {
+            session()->flash('message', '⛔ Ce statut système ne peut pas être supprimé.');
+            return;
+        }
+
+        $statut->delete();
         session()->flash('message', 'Statut supprimé 🗑️');
     }
 
@@ -57,8 +74,11 @@ class StudentStatut extends Component
 
     public function render()
     {
-        $statuts = StudentStatutModel::orderBy('libelle')->paginate(10);
+        $statuts = StudentStatutModel::orderBy('type', 'desc')
+            ->orderBy('libelle')
+            ->paginate(10);
 
         return view('livewire.admin.student-statut', compact('statuts'));
     }
 }
+

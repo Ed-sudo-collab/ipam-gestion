@@ -86,7 +86,8 @@ Route::middleware(['auth', IsActive::class, IsAdmin::class])
 
     });
 
-// =========================
+
+    // =========================
 // Routes accessibles à ADMIN + SECRETAIRE
 // =========================
 Route::middleware(['auth', IsActive::class, CheckPermission::class . ':manage-students'])
@@ -103,12 +104,10 @@ Route::middleware(['auth', IsActive::class, CheckPermission::class . ':manage-st
             ->name('students.create');
 
         // Edition via wizard
-        Route::get('students/{student}/edit', [StudentController::class, 'edit'])
+        Route::get('students/{studentId}/edit', [StudentController::class, 'edit'])
             ->name('students.edit');
 
-        // Détails (lecture seule) via wizard
-        Route::get('students/{student}', [StudentController::class, 'show'])
+        // Détails (lecture seule)
+        Route::get('students/{studentId}', [StudentController::class, 'show'])
             ->name('students.show');
     });
-
-
