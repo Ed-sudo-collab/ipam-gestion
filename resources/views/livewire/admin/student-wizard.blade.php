@@ -49,28 +49,62 @@
         @endif
 
         {{-- Étape 2 : Infos académiques --}}
-        @if($step == 2)
-            <h3 class="mb-6 text-xl font-semibold text-indigo-700">Informations académiques</h3>
-            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-                <x-input label="Dernier diplôme" wire:model="dernier_diplome" />
-                <x-input label="Établissement" wire:model="etablissement" />
-                <x-input label="Année d'obtention" type="number" wire:model="annee_obtention" />
-                <x-input label="Mention" wire:model="mention" />
-            </div>
+@if($step == 2)
+    <h3 class="mb-6 text-xl font-semibold text-indigo-700">Informations académiques</h3>
 
-            <div class="mt-6 space-y-4">
-                <div>
-                    <label class="block mb-1 font-medium">Diplôme (fichier)</label>
-                    <input type="file" wire:model="diplome_file" class="w-full px-3 py-2 border rounded">
-                </div>
-                <div>
-                    <label class="block mb-1 font-medium">Relevés (fichier)</label>
-                    <input type="file" wire:model="releves_file" class="w-full px-3 py-2 border rounded">
-                </div>
-            </div>
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+        <x-input label="Dernier diplôme" wire:model="dernier_diplome" />
+        <x-input label="Établissement" wire:model="etablissement" />
+        <x-input label="Année d'obtention" type="number" wire:model="annee_obtention" />
+        <x-input label="Mention" wire:model="mention" />
+    </div>
 
-            <x-wizard-buttons />
-        @endif
+    {{-- Upload des fichiers --}}
+    <div class="mt-6 space-y-4">
+        <div>
+            <label class="block mb-1 font-medium">Diplôme (fichier)</label>
+            <input type="file" wire:model="diplome_file" class="w-full px-3 py-2 border rounded">
+
+            {{-- Fichier existant du diplôme --}}
+            @if(!empty($existingDiplome))
+                <div class="mt-2 text-sm text-gray-700">
+                    Fichier existant :
+                    <a href="{{ Storage::url($existingDiplome) }}" target="_blank" class="text-indigo-600 underline">
+                        {{ basename($existingDiplome) }}
+                    </a>
+                    <button type="button"
+                            wire:click="deleteAcademicFile('diplome')"
+                            class="ml-2 text-red-600 hover:underline">
+                        Supprimer
+                    </button>
+                </div>
+            @endif
+        </div>
+
+        <div>
+            <label class="block mb-1 font-medium">Relevés (fichier)</label>
+            <input type="file" wire:model="releves_file" class="w-full px-3 py-2 border rounded">
+
+            {{-- Fichier existant du relevé --}}
+            @if(!empty($existingReleves))
+                <div class="mt-2 text-sm text-gray-700">
+                    Fichier existant :
+                    <a href="{{ Storage::url($existingReleves) }}" target="_blank" class="text-indigo-600 underline">
+                        {{ basename($existingReleves) }}
+                    </a>
+                    <button type="button"
+                            wire:click="deleteAcademicFile('releves')"
+                            class="ml-2 text-red-600 hover:underline">
+                        Supprimer
+                    </button>
+                </div>
+            @endif
+        </div>
+    </div>
+
+    <x-wizard-buttons />
+@endif
+
 
         {{-- Étape 3 : Infos professionnelles --}}
         @if($step == 3)

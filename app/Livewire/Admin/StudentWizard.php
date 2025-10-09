@@ -331,6 +331,32 @@ class StudentWizard extends Component
         session()->flash('message', 'Document supprimé.');
     }
 
+
+    public function deleteAcademicFile($type)
+{
+    if (!in_array($type, ['diplome', 'releves'])) return;
+
+    $field = $type === 'diplome' ? 'existingDiplome' : 'existingReleves';
+    $path = $this->$field;
+
+    if ($path && Storage::disk('public')->exists($path)) {
+        Storage::disk('public')->delete($path);
+    }
+
+    // Supprimer du modèle académique si existant
+    if ($this->student && $this->student->academic) {
+        $this->student->academic->update([
+            $type === 'diplome' ? 'path_diplome' : 'path_releves' => null,
+        ]);
+    }
+
+    $this->$field = null;
+
+    session()->flash('message', ucfirst($type).' supprimé avec succès.');
+}
+
+
+
     public function render()
     {
         return view('livewire.admin.student-wizard');
