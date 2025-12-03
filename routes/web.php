@@ -31,6 +31,7 @@ Route::middleware(['auth', IsActive::class])
     })
     ->name('dashboard');
 
+
 // =========================
 // Routes Admin strictes (ADMIN ONLY)
 // =========================
