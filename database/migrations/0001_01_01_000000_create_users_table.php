@@ -13,11 +13,17 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('student_id')->nullable(); // 👉 juste la colonne, pas de foreign ici
+            $table->string('matricule')->nullable();
             $table->string('name');
             $table->string('email')->unique();
+            $table->string('telephone')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->enum('status', ['ACTIVE','INACTIVE','BLOCKED'])->default('ACTIVE');
             $table->rememberToken();
+            $table->foreignId('current_team_id')->nullable();
+            $table->string('profile_photo_path', 2048)->nullable();
             $table->timestamps();
         });
 
