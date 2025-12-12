@@ -35,7 +35,7 @@
 
                 @can('manage-students')
                  <x-nav-link href="{{ route('admin.students.index') }}" :active="request()->routeIs('admin.students.*')">
-                   {{ __('Gestion des étudiants et inscriptions') }}
+                   {{ __('Gestion des étudiants') }}
                   </x-nav-link>
                 @endcan
 

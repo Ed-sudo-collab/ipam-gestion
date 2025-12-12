@@ -85,7 +85,16 @@ Route::middleware(['auth', IsActive::class, IsAdmin::class])
         Route::get('student-statut', [StudentStatutController::class, 'index'])
             ->name('studentStatut.index');
 
+         Route::get('parametre', [ParametreController::class, 'index'])
+            ->name('studentStatut.index');
+        
+
+
+
     });
+
+
+    
 
 
     // =========================
