@@ -55,6 +55,27 @@ class Student extends Model
         return $this->hasMany(Enrollment::class);
     }
 
+
+
+
+
+
+
+
+public function enroll($academicYear, $program, $level)
+{
+    return Enrollment::create([
+        'student_id' => $this->id,
+        'academic_year_id' => $academicYear->id,
+        'program_id' => $program->id,
+        'level_id' => $level->id,
+        'enrollment_date' => now(),
+        'status' => 'PENDING',
+    ]);
+}
+
+
+
     public function academic()
     {
         return $this->hasOne(StudentAcademic::class);

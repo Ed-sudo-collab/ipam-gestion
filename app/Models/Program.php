@@ -16,4 +16,10 @@ class Program extends Model
         return $this->belongsToMany(Level::class, 'level_program', 'program_id', 'level_id');
     }
 
+
+    public function enrollments()
+    {
+        return $this->hasMany(Enrollment::class);
+    }
+
 }

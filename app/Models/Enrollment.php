@@ -7,14 +7,60 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Enrollment extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
-        'student_id','academic_year_id','program_id','level_id',
-        'mode_etude','statut','date_inscription'
+        'student_id',
+        'academic_year_id',
+        'program_id',
+        'level_id',
+        'mode_etude',
+        'statut',            // VALID, PENDING, CANCELLED
+        'date_inscription'
     ];
 
-    public function student() { return $this->belongsTo(Student::class); }
-    public function academicYear() { return $this->belongsTo(AcademicYear::class); }
-    public function program() { return $this->belongsTo(Program::class); }
-    public function level() { return $this->belongsTo(Level::class); }
-}
+    protected $casts = [
+        'date_inscription' => 'datetime',
+    ];
 
+    /* ======= RELATIONS ======= */
+
+    public function student()
+    {
+        return $this->belongsTo(Student::class);
+    }
+
+    public function academicYear()
+    {
+        return $this->belongsTo(AcademicYear::class, 'academic_year_id');
+    }
+
+    public function program()
+    {
+        return $this->belongsTo(Program::class);
+    }
+
+    public function level()
+    {
+        return $this->belongsTo(Level::class);
+    }
+
+    /* ======= LOGIQUE MÉTIER (optionnel, UML) ======= */
+
+    public function validate()
+    {
+        $this->statut = 'VALID';
+        $this->save();
+    }
+
+    public function cancel()
+    {
+        $this->statut = 'CANCELLED';
+        $this->save();
+    }
+
+    public function isValid()
+    {
+        return $this->statut === 'VALID';
+    }
+}

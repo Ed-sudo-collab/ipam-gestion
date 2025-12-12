@@ -40,6 +40,11 @@
                 @endcan
 
 
+                @can('manage-students')
+                 <x-nav-link href="{{ route('admin.enrollments.index') }}" :active="request()->routeIs('admin.enrollments.*')">
+                   {{ __('Gestion des inscriptions') }}
+                  </x-nav-link>
+                @endcan
 
 
 

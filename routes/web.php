@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\ProgramController;
 use App\Http\Controllers\Admin\AcademicYearController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\StudentStatutController;
+use App\Http\Controllers\Admin\EnrollmentController;
 use App\Http\Middleware\IsActive;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\CheckPermission;
@@ -85,19 +86,19 @@ Route::middleware(['auth', IsActive::class, IsAdmin::class])
         Route::get('student-statut', [StudentStatutController::class, 'index'])
             ->name('studentStatut.index');
 
-         Route::get('parametre', [ParametreController::class, 'index'])
-            ->name('studentStatut.index');
-        
+
+
+
 
 
 
     });
 
 
-    
 
 
-    // =========================
+
+// =========================
 // Routes accessibles à ADMIN + SECRETAIRE
 // =========================
 Route::middleware(['auth', IsActive::class, CheckPermission::class . ':manage-students'])
@@ -120,4 +121,13 @@ Route::middleware(['auth', IsActive::class, CheckPermission::class . ':manage-st
         // Détails (lecture seule)
         Route::get('students/{studentId}', [StudentController::class, 'show'])
             ->name('students.show');
+
+
+        // ➕ Nouvelle route pour l’inscription
+        Route::get('enrollments', [EnrollmentController::class, 'index'])
+            ->name('enrollments.index');
+
+
+
+
     });
