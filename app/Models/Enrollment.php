@@ -15,7 +15,7 @@ class Enrollment extends Model
         'program_id',
         'level_id',
         'mode_etude',
-        'statut',            // VALID, PENDING, CANCELLED
+        'statut',
         'date_inscription'
     ];
 

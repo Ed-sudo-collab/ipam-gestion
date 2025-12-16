@@ -51,6 +51,17 @@
 
 
 
+                @can('manage-enrollments')
+                 <x-nav-link href="{{ route('admin.tuitionFees.index') }}" :active="request()->routeIs('admin.tuitionFees.*')">
+                   {{ __('Frais de scolarité et échéances') }}
+                  </x-nav-link>
+                @endcan
+
+
+
+
+
+
 
 
 

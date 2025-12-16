@@ -9,6 +9,8 @@ use App\Http\Controllers\Admin\AcademicYearController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\StudentStatutController;
 use App\Http\Controllers\Admin\EnrollmentController;
+use App\Http\Controllers\Admin\TuitionFeeController;
+use App\Http\Controllers\Admin\TuitionInstallmentController;
 use App\Http\Middleware\IsActive;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\CheckPermission;
@@ -127,6 +129,15 @@ Route::middleware(['auth', IsActive::class, CheckPermission::class . ':manage-st
         Route::get('enrollments', [EnrollmentController::class, 'index'])
             ->name('enrollments.index');
 
+
+        //Gestion des frais de scolarité
+        Route::get('tuition-fees', [TuitionFeeController::class, 'index'])
+            ->name('tuitionFees.index');
+
+
+        //Gestion des échéances
+        Route::get('tuition-installments', [TuitionInstallmentController::class, 'index'])
+            ->name('tuitionInstallments.index');
 
 
 

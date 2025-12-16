@@ -21,4 +21,11 @@ class Level extends Model
         return $this->hasMany(Enrollment::class);
     }
 
+
+    public function tuitionFees()
+    {
+        return $this->hasMany(TuitionFee::class);
+    }
+
+
 }
