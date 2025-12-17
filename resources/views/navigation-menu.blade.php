@@ -61,6 +61,16 @@
 
 
 
+                @can('manage-enrollments')
+                 <x-nav-link href="{{ route('admin.payements.index') }}" :active="request()->routeIs('admin.payements.*')">
+                   {{ __('Gestion des paiements') }}
+                  </x-nav-link>
+                @endcan
+
+
+
+
+
 
 
 

@@ -55,6 +55,15 @@ class TuitionFee extends Model
         return $this->hasMany(Enrollment::class, 'level_id', 'level_id');
     }
 
+
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class, 'fee_id');
+    }
+
+
+
     /* =======================
      |     LOGIQUE MÉTIER
      |======================= */
@@ -78,4 +87,9 @@ class TuitionFee extends Model
     {
         return $this->installments()->count() > 0;
     }
+
+
+
+
+
 }

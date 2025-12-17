@@ -42,6 +42,20 @@ class TuitionInstallment extends Model
         return $this->belongsTo(TuitionFee::class);
     }
 
+
+
+
+    public function payments()
+    {
+        return $this->hasMany(Payment::class, 'installment_id');
+    }
+
+
+
+
+
+
+
     /**
      * Une échéance peut avoir plusieurs paiements
      * (paiement partiel ou complet selon ta logique)

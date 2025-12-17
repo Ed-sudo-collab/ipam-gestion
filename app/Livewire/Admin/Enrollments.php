@@ -21,7 +21,7 @@ class Enrollments extends Component
     public $program_id;
     public $level_id;
     public $mode_etude;
-    public $statut = "validee";
+    public $statut = "en_cours_paiement";
 
     public function mount()
     {
