@@ -3,20 +3,21 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Payment extends Model
 {
     protected $fillable = [
         'student_id',
         'fee_id',
-        'installment_id',
         'payment_method_id',
-        'amount_paid',
+        'total_amount',
         'payment_date',
     ];
 
     protected $casts = [
         'payment_date' => 'datetime',
+        'amount_paid'  => 'decimal:2',
     ];
 
     /* ===========================
@@ -33,13 +34,25 @@ class Payment extends Model
         return $this->belongsTo(TuitionFee::class, 'fee_id');
     }
 
-    public function installment()
+    public function paymentMethod()
     {
-        return $this->belongsTo(TuitionInstallment::class, 'installment_id');
+        return $this->belongsTo(PaymentMethod::class);
     }
 
-    public function method()
+    /**
+     * Répartition du paiement sur les échéances
+     */
+    public function allocations(): HasMany
     {
-        return $this->belongsTo(PaymentMethod::class, 'payment_method_id');
+        return $this->hasMany(PaymentAllocation::class);
+    }
+
+    /* ===========================
+     * MÉTHODES MÉTIER
+     * =========================== */
+
+    public function isFullyAllocated(): bool
+    {
+        return $this->allocations->sum('amount') >= $this->amount_paid;
     }
 }

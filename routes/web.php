@@ -9,9 +9,11 @@ use App\Http\Controllers\Admin\AcademicYearController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\StudentStatutController;
 use App\Http\Controllers\Admin\EnrollmentController;
+use App\Http\Controllers\Admin\FinanceController;
 use App\Http\Controllers\Admin\PayementController;
 use App\Http\Controllers\Admin\TuitionFeeController;
 use App\Http\Controllers\Admin\TuitionInstallmentController;
+use App\Http\Controllers\Admin\PaymentHistoriq;
 use App\Http\Middleware\IsActive;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\CheckPermission;
@@ -146,5 +148,16 @@ Route::middleware(['auth', IsActive::class, CheckPermission::class . ':manage-st
             ->name('payements.index');
 
 
+        //Situation financière
+        Route::get('finance', [FinanceController::class, 'index'])
+            ->name('finance.index');
+
+        // 📄 Historique des paiements
+        Route::get('/payment-historiq', [PaymentHistoriq::class, 'index'])
+            ->name('paymentHistoriq.index');
+
+        // 🔍 Détail d’un paiement
+        Route::get('/payment-historiq/{paymentId}', [PaymentHistoriq::class, 'show'])
+            ->name('paymentHistoriq.show');
 
     });

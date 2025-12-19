@@ -38,7 +38,14 @@
                     <tr>
                         <td class="border px-2 py-1">{{ $inst['label'] }}</td>
                         <td class="border px-2 py-1">{{ number_format($inst['amount'], 0, ',', ' ') }}</td>
-                        <td class="border px-2 py-1">{{ number_format($inst['paid'], 0, ',', ' ') }}</td>
+                        <td class="border px-2 py-1">
+                            {{ number_format($inst['paid'], 0, ',', ' ') }}
+                            @if($inst['paid'] > 0)
+                                <span class="text-sm text-gray-500">
+                                    ({{ implode(', ', array_map(fn($a) => number_format($a['amount'],0,',',' '), $inst['allocations'] ?? [])) }})
+                                </span>
+                            @endif
+                        </td>
                         <td class="border px-2 py-1">{{ number_format($inst['remaining'], 0, ',', ' ') }}</td>
                         <td class="border px-2 py-1 font-semibold">
                             {{ $inst['status'] }}
