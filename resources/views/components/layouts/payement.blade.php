@@ -1,4 +1,6 @@
 <x-app-layout>
+
+
     <!-- Menu horizontal Admin -->
     <div class="mb-6 border-b border-gray-200">
         <nav class="flex space-x-4" aria-label="Tabs">
@@ -49,6 +51,10 @@
     <!-- Contenu spécifique -->
     <div class="p-6 bg-white rounded-lg shadow">
         {{ $slot }}
+
+        <!-- Styles -->
+        @livewireStyles
+
     </div>
 </x-app-layout>
 

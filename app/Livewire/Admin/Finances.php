@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Livewire\Admin;
 
 use Livewire\Component;
@@ -32,11 +31,9 @@ class Finances extends Component
      |   RÉACTIVITÉ LIVEWIRE
      |======================= */
 
-    public function updated($property)
+    public function updatedStudentId()
     {
-        if ($property === 'student_id') {
-            $this->loadStudentFinances();
-        }
+        $this->loadStudentFinances();
     }
 
     /* =======================
@@ -45,7 +42,7 @@ class Finances extends Component
 
     private function loadStudentFinances()
     {
-        // Reset
+        // 🔄 Reset complet
         $this->summary = [];
         $this->feesDetails = [];
         $this->paymentsHistory = [];
@@ -72,7 +69,7 @@ class Finances extends Component
             $yearId    = $enrollment->academicYear->id;
             $yearLabel = $enrollment->academicYear->libelle;
 
-            // Initialisation annuelle
+            // 🔹 Initialisation annuelle
             if (!isset($this->summary[$yearId])) {
                 $this->summary[$yearId] = [
                     'label'     => $yearLabel,
@@ -88,8 +85,14 @@ class Finances extends Component
             foreach ($enrollment->level->tuitionFees as $fee) {
                 foreach ($fee->installments()->get() as $inst) {
 
-                    // 🔹 Montant payé via allocations
-                    $paid = $inst->paymentAllocations->sum('amount');
+                    // 🔥 FILTRAGE STRICT PAR ÉTUDIANT
+                    $allocations = $inst->paymentAllocations
+                        ->filter(fn ($allocation) =>
+                            $allocation->payment &&
+                            $allocation->payment->student_id === $student->id
+                        );
+
+                    $paid = $allocations->sum('amount');
                     $remaining = max(0, $inst->amount - $paid);
 
                     // 🔹 Résumé annuel
@@ -109,11 +112,9 @@ class Finances extends Component
                             : ($paid > 0 ? 'PARTIELLE' : 'IMPAYÉE'),
                     ];
 
-                    // 🔹 Historique des paiements (via allocations)
-                    foreach ($inst->paymentAllocations as $allocation) {
+                    // 🔹 Historique des paiements
+                    foreach ($allocations as $allocation) {
                         $payment = $allocation->payment;
-
-                        if (!$payment) continue;
 
                         $this->paymentsHistory[$yearId][] = [
                             'date'   => $payment->payment_date,
@@ -126,7 +127,7 @@ class Finances extends Component
             }
         }
 
-        // Tri historique par date décroissante
+        // 🔽 Tri des paiements par date décroissante
         foreach ($this->paymentsHistory as $yearId => $history) {
             usort($this->paymentsHistory[$yearId], fn ($a, $b) =>
                 strtotime($b['date']) <=> strtotime($a['date'])
