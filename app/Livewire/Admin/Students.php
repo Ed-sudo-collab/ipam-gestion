@@ -5,49 +5,50 @@ namespace App\Livewire\Admin;
 use Livewire\Component;
 use Livewire\WithPagination;
 use App\Models\Student;
+use App\Models\StudentStatut;
 
 class Students extends Component
 {
     use WithPagination;
 
+    protected $paginationTheme = 'tailwind';
+
     public $search = '';
+    public $statut_id = '';
     public $perPage = 10;
 
-    // Mise à jour de la recherche
-    public function updatingSearch()
+    public $statuts;
+
+    public function mount()
     {
-        $this->resetPage();
+        $this->statuts = StudentStatut::orderBy('libelle')->get();
     }
 
     public function render()
     {
         $students = Student::query()
-            ->where('matricule', 'like', "%{$this->search}%")
-            ->orWhere('nom', 'like', "%{$this->search}%")
-            ->orWhere('prenom', 'like', "%{$this->search}%")
-            ->orWhere('email', 'like', "%{$this->search}%")
+            ->with('statut')
+
+            /* 🔍 Recherche */
+            ->when($this->search !== '', function ($query) {
+                $query->where(function ($q) {
+                    $q->where('nom', 'like', "%{$this->search}%")
+                      ->orWhere('prenom', 'like', "%{$this->search}%")
+                      ->orWhere('matricule', 'like', "%{$this->search}%");
+                });
+            })
+
+            /* 👤 Statut */
+            ->when($this->statut_id !== '', function ($query) {
+                $query->where('statut_id', $this->statut_id);
+            })
+
             ->orderBy('nom')
             ->paginate($this->perPage);
 
         return view('livewire.admin.students', compact('students'));
     }
 
-    // Redirige vers la page de création (wizard)
-    public function create()
-    {
-        return redirect()->route('admin.students.create');
-    }
-
-    // Redirige vers la page de détails (wizard en mode édition)
-    public function showDetails($id)
-    {
-        return redirect()->route('admin.students.show', $id);
-    }
-
-
-
-
-    // Suppression
     public function delete($id)
     {
         Student::findOrFail($id)->delete();

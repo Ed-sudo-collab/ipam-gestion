@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Student;
 use App\Models\Payment;
 use App\Models\PaymentMethod;
+use App\Models\Enrollment;
 
 class Payements extends Component
 {
@@ -21,14 +22,13 @@ class Payements extends Component
 
     public function mount()
     {
-        // Charger tous les étudiants et méthodes de paiement
         $this->students = Student::orderBy('nom')->get();
         $this->paymentMethods = PaymentMethod::all();
     }
 
-    /**
-     * Mise à jour du preview des installments quand un étudiant est sélectionné
-     */
+    /* ===============================
+     | PREVIEW DES ÉCHÉANCES
+     |=============================== */
     public function updatedStudentId()
     {
         $this->installmentsPreview = [];
@@ -42,25 +42,22 @@ class Payements extends Component
         if (!$student) return;
 
         foreach ($student->enrollments as $enrollment) {
-            if (!$enrollment->level) continue;
-
-            foreach ($enrollment->level->tuitionFees as $fee) {
-                // Tri stable par id pour conserver l’ordre des installments
+            foreach ($enrollment->level?->tuitionFees ?? [] as $fee) {
                 foreach ($fee->installments()->orderBy('id')->get() as $inst) {
-                    // 🔹 Montant déjà payé pour cet étudiant
+
                     $paid = $inst->paymentAllocations()
-                        ->whereHas('payment', fn($q) => $q->where('student_id', $student->id))
+                        ->whereHas('payment', fn ($q) =>
+                            $q->where('student_id', $student->id)
+                        )
                         ->sum('amount');
 
-                    $remaining = $inst->amount - $paid;
-
                     $this->installmentsPreview[] = [
-                        'label'     => $inst->label,
-                        'amount'    => $inst->amount,
-                        'paid'      => $paid,
-                        'remaining' => $remaining,
-                        'due_date'  => $inst->due_date,
-                        'status'    => $remaining <= 0
+                        'enrollment_id' => $enrollment->id,
+                        'label'         => $inst->label,
+                        'amount'        => $inst->amount,
+                        'paid'          => $paid,
+                        'remaining'     => $inst->amount - $paid,
+                        'status'        => $paid >= $inst->amount
                             ? 'PAYÉE'
                             : ($paid > 0 ? 'PARTIELLE' : 'IMPAYÉE'),
                     ];
@@ -78,9 +75,9 @@ class Payements extends Component
         ];
     }
 
-    /**
-     * Enregistrer un paiement
-     */
+    /* ===============================
+     | ENREGISTREMENT DU PAIEMENT
+     |=============================== */
     public function save()
     {
         $this->validate();
@@ -93,56 +90,59 @@ class Payements extends Component
 
             $remainingAmount = $this->amount_paid;
 
-            // 🔹 Collecte toutes les installments pour cet étudiant dans l'ordre
-            $installments = collect();
-            foreach ($student->enrollments as $enrollment) {
-                if (!$enrollment->level) continue;
+            /** 🔹 Création du paiement */
+            $payment = Payment::create([
+                'student_id'        => $student->id,
+                'payment_method_id' => $this->payment_method_id,
+                'total_amount'      => $this->amount_paid,
+                'payment_date'      => now(),
+            ]);
 
-                foreach ($enrollment->level->tuitionFees as $fee) {
-                    foreach ($fee->installments()->orderBy('id')->get() as $inst) {
-                        $installments->push($inst);
+            /** 🔹 Paiement progressif */
+            foreach ($student->enrollments as $enrollment) {
+
+                foreach ($enrollment->level?->tuitionFees ?? [] as $fee) {
+
+                    $installments = $fee->installments()->orderBy('id')->get();
+
+                    foreach ($installments as $index => $inst) {
+
+                        if ($remainingAmount <= 0) break 3;
+
+                        $alreadyPaid = $inst->paymentAllocations()
+                            ->whereHas('payment', fn ($q) =>
+                                $q->where('student_id', $student->id)
+                            )
+                            ->sum('amount');
+
+                        $rest = $inst->amount - $alreadyPaid;
+                        if ($rest <= 0) continue;
+
+                        $toAllocate = min($remainingAmount, $rest);
+
+                        $payment->allocations()->create([
+                            'installment_id' => $inst->id,
+                            'amount'         => $toAllocate,
+                        ]);
+
+                        $remainingAmount -= $toAllocate;
+
+                        /**
+                         * ✅ SI LA 1ʳᵉ ÉCHÉANCE EST SOLDÉE → VALIDATION DE L’INSCRIPTION
+                         */
+                        if ($index === 0 && ($alreadyPaid + $toAllocate) >= $inst->amount) {
+                            $enrollment->validateEnrollment();
+                        }
                     }
                 }
             }
 
-            // 🔹 Créer un paiement global
-            $payment = Payment::create([
-                'student_id'        => $student->id,
-                'payment_method_id' => $this->payment_method_id,
-                'total_amount'      => (float) $this->amount_paid,
-                'reference'         => null,
-                'status'            => 'CONFIRMED',
-                'payment_date'      => now(),
-            ]);
-
-            // 🔹 Allocation progressive sur les installments
-            foreach ($installments as $inst) {
-                if ($remainingAmount <= 0) break;
-
-                $alreadyAllocated = $inst->paymentAllocations()
-                    ->whereHas('payment', fn($q) => $q->where('student_id', $student->id))
-                    ->sum('amount');
-
-                $rest = $inst->amount - $alreadyAllocated;
-
-                if ($rest <= 0) continue;
-
-                $toAllocate = min($remainingAmount, $rest);
-
-                $payment->allocations()->create([
-                    'installment_id' => $inst->id,
-                    'amount'         => $toAllocate,
-                ]);
-
-                $remainingAmount -= $toAllocate;
-            }
-
             if ($remainingAmount > 0) {
-                throw new \Exception("Le montant dépasse la dette totale de cet étudiant.");
+                throw new \Exception("Le montant dépasse la dette totale.");
             }
         });
 
-        session()->flash('success', 'Paiement enregistré avec succès.');
+        session()->flash('success', 'Paiement enregistré et inscription mise à jour.');
         $this->reset(['amount_paid']);
         $this->updatedStudentId();
     }

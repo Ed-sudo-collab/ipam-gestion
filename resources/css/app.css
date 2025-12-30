@@ -5,3 +5,35 @@
 [x-cloak] {
     display: none;
 }
+
+/* =========================
+   MODE IMPRESSION
+========================= */
+@media print {
+    /* Masquer tout */
+    body * {
+        visibility: hidden;
+    }
+
+    /* Afficher uniquement le reçu */
+    .receipt-print,
+    .receipt-print * {
+        visibility: visible;
+    }
+
+    /* Positionner correctement le reçu */
+    .receipt-print {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        padding: 0;
+        margin: 0;
+        border: none;
+    }
+
+    /* Masquer les boutons */
+    .print\:hidden {
+        display: none !important;
+    }
+}

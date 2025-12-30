@@ -1,17 +1,17 @@
 <div class="p-6 space-y-6">
 
-    <h2 class="text-xl font-bold mb-4">Détail du paiement #{{ $payment->id }}</h2>
+    <h2 class="mb-4 text-xl font-bold">Détail du paiement #{{ $payment->id }}</h2>
 
     {{-- Messages flash --}}
     @if(session()->has('success'))
-        <div class="p-2 bg-green-100 text-green-800 rounded">{{ session('success') }}</div>
+        <div class="p-2 text-green-800 bg-green-100 rounded">{{ session('success') }}</div>
     @endif
     @if(session()->has('error'))
-        <div class="p-2 bg-red-100 text-red-800 rounded">{{ session('error') }}</div>
+        <div class="p-2 text-red-800 bg-red-100 rounded">{{ session('error') }}</div>
     @endif
 
     {{-- Informations paiement --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+    <div class="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-2">
         <div>
             <strong>Étudiant :</strong><br>
             {{ $payment->student->matricule ?? '-' }} -
@@ -29,22 +29,22 @@
     </div>
 
     {{-- Détail des allocations --}}
-    <div class="border rounded p-4">
-        <h3 class="font-semibold mb-2">Échéances payées</h3>
+    <div class="p-4 border rounded">
+        <h3 class="mb-2 font-semibold">Échéances payées</h3>
         <table class="w-full border">
             <thead class="bg-gray-100">
                 <tr>
-                    <th class="border px-2 py-1">Échéance</th>
-                    <th class="border px-2 py-1">Montant payé</th>
-                    <th class="border px-2 py-1">Date d'échéance</th>
+                    <th class="px-2 py-1 border">Échéance</th>
+                    <th class="px-2 py-1 border">Montant payé</th>
+                    <th class="px-2 py-1 border">Date d'échéance</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($payment->allocations as $alloc)
                     <tr>
-                        <td class="border px-2 py-1">{{ $alloc->installment->label ?? '-' }}</td>
-                        <td class="border px-2 py-1">{{ number_format($alloc->amount, 0, ',', ' ') }} FCFA</td>
-                        <td class="border px-2 py-1">{{ $alloc->installment->due_date ?? '-' }}</td>
+                        <td class="px-2 py-1 border">{{ $alloc->installment->label ?? '-' }}</td>
+                        <td class="px-2 py-1 border">{{ number_format($alloc->amount, 0, ',', ' ') }} FCFA</td>
+                        <td class="px-2 py-1 border">{{ $alloc->installment->due_date ?? '-' }}</td>
                     </tr>
                 @endforeach
             </tbody>
@@ -54,13 +54,18 @@
     {{-- Actions --}}
     <div class="space-x-2">
         <a href="{{ route('admin.paymentHistoriq.index') }}"
-           class="px-4 py-2 bg-gray-500 text-white rounded">Retour à l'historique</a>
+           class="px-4 py-2 text-white bg-gray-500 rounded">Retour à l'historique</a>
 
         @if(auth()->user()->role_id === 1)
             <button wire:click="cancelPayment"
                     onclick="confirm('Voulez-vous vraiment annuler ce paiement ?') || event.stopImmediatePropagation()"
-                    class="px-4 py-2 bg-red-500 text-white rounded">Annuler ce paiement</button>
+                    class="px-4 py-2 text-white bg-red-500 rounded">Annuler ce paiement</button>
         @endif
+
+        <a href="{{ route('admin.payment.receipt', ['paymentId' => $payment->id]) }}"
+           target="_self"
+           class="px-4 py-2 text-white bg-blue-600 rounded">Voir le reçu</a>
+
     </div>
 
 </div>

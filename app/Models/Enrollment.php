@@ -47,11 +47,11 @@ class Enrollment extends Model
 
     /* ======= LOGIQUE MÉTIER (optionnel, UML) ======= */
 
-    public function validate()
+    public function validateEnrollment()
     {
-        $this->statut = 'VALID';
-        $this->save();
+        $this->update(['statut' => 'validee']);
     }
+
 
     public function cancel()
     {

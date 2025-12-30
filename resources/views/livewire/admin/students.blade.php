@@ -1,14 +1,47 @@
 <div>
-    {{-- Barre d'actions --}}
-    <div class="flex items-center justify-between mb-4">
-        <input type="text" wire:model="search" placeholder="Rechercher..."
-               class="px-3 py-2 border rounded-lg" />
+     {{-- En-tête et filtres --}}
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <h2 class="text-xl font-semibold">Liste des étudiants</h2>
 
-        <a href="{{ route('admin.students.create') }}"
-           class="px-4 py-2 text-white bg-indigo-600 rounded hover:bg-indigo-700">
-            + Ajouter un étudiant
-        </a>
     </div>
+    <br><br>
+    {{-- Barre d'actions --}}
+    <div class="flex flex-col md:flex-row gap-4 mb-4">
+
+        <!-- 🔍 Recherche -->
+        <div class="flex flex-col flex-1 min-w-[200px]">
+            <label class="mb-1 font-medium text-gray-700">Recherche</label>
+            <input
+                type="text"
+                wire:model.live="search"
+                placeholder="Nom, prénom ou matricule"
+                class="px-3 py-2 border rounded-lg w-full"
+            />
+        </div>
+
+        <!-- 👤 Statut -->
+        <div class="flex flex-col min-w-[180px]">
+            <label class="mb-1 font-medium text-gray-700">Statut étudiant</label>
+            <select wire:model.live="statut_id" class="px-3 py-2 border rounded-lg w-full">
+                <option value="">-- Tous les statuts --</option>
+                @foreach ($statuts as $statut)
+                    <option value="{{ $statut->id }}">
+                        {{ $statut->libelle }}
+                    </option>
+                @endforeach
+            </select>
+        </div>
+
+        <div class="flex flex-col min-w-[180px]">
+            <a href="{{ route('admin.students.create') }}"
+            class="px-4 py-2 text-white bg-indigo-600 rounded hover:bg-indigo-700 text-center">
+                + Ajouter un étudiant
+            </a>
+        </div>
+
+    </div>
+
+
 
     {{-- Tableau étudiants --}}
     <div class="overflow-x-auto bg-white rounded-lg shadow">

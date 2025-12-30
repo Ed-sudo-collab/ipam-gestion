@@ -156,6 +156,12 @@ Route::middleware(['auth', IsActive::class, CheckPermission::class . ':manage-st
         Route::get('/payment-historiq', [PaymentHistoriq::class, 'index'])
             ->name('paymentHistoriq.index');
 
+
+        // 📄 Reçu d'un payement
+        Route::get('/payment-historiq/{paymentId}/receipt', [PayementController::class, 'receipt'])
+            ->name('payment.receipt');
+
+
         // 🔍 Détail d’un paiement
         Route::get('/payment-historiq/{paymentId}', [PaymentHistoriq::class, 'show'])
             ->name('paymentHistoriq.show');
