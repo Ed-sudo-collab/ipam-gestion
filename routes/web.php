@@ -133,6 +133,12 @@ Route::middleware(['auth', IsActive::class, CheckPermission::class . ':manage-st
             ->name('enrollments.index');
 
 
+        /// 📜 Attestation d'inscription
+        Route::get('/enrollments/{enrollmentId}/attestation', [EnrollmentController::class, 'attestation'])
+            ->name('enrollments.attestation');
+
+
+
         //Gestion des frais de scolarité
         Route::get('tuition-fees', [TuitionFeeController::class, 'index'])
             ->name('tuitionFees.index');

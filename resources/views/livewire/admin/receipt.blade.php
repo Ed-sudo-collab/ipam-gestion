@@ -1,9 +1,9 @@
-     <div class="receipt-print max-w-3xl mx-auto bg-white text-black text-sm p-10 border border-gray-300">
+     <div class="max-w-5xl p-10 mx-auto text-sm text-black bg-white border border-gray-300 receipt-print">
 
             {{-- =========================
                 EN-TÊTE
             ========================== --}}
-            <div class="flex justify-between items-start mb-6">
+            <div class="flex items-start justify-between mb-6">
 
                 {{-- Logo établissement (haut droite) --}}
                 <div>
@@ -30,8 +30,8 @@
             {{-- =========================
                 NUMÉRO DU REÇU
             ========================== --}}
-            <div class="text-center mb-8">
-                <h2 class="text-xl font-bold uppercase underline">
+            <div class="mb-8 text-center">
+                <h2 class="text-xl font-bold underline uppercase">
                     Reçu de paiement
                 </h2>
                 <p class="mt-2 text-base font-semibold">
@@ -42,7 +42,7 @@
             {{-- =========================
                 INFORMATIONS ÉTUDIANT
             ========================== --}}
-            <div class="space-y-3 mb-8">
+            <div class="mb-8 space-y-3">
 
                 <p>
                     <strong>Nom :</strong>
@@ -96,7 +96,7 @@
                 {{-- Signature --}}
                 <div class="text-center">
                     <p class="mb-20 font-semibold">La Caisse</p>
-                    <p class="border-t border-black pt-1">
+                    <p class="pt-1 border-t border-black">
                         Signature & Cachet
                     </p>
                 </div>
@@ -107,7 +107,7 @@
             ========================== --}}
             <div class="mt-10 text-center print:hidden">
                 <button onclick="window.print()"
-                    class="px-6 py-2 bg-blue-700 text-white rounded hover:bg-blue-800">
+                    class="px-6 py-2 text-white bg-blue-700 rounded hover:bg-blue-800">
                     Imprimer le reçu
                 </button>
             </div>

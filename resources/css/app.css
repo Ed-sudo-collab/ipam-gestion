@@ -7,10 +7,10 @@
 }
 
 /* =========================
-   MODE IMPRESSION
+   MODE IMPRESSION - REÇU (A2)
 ========================= */
 @media print {
-    /* Masquer tout */
+    /* Masquer tout par défaut */
     body * {
         visibility: hidden;
     }
@@ -21,19 +21,89 @@
         visibility: visible;
     }
 
-    /* Positionner correctement le reçu */
+    /* Style pour le reçu A2 */
     .receipt-print {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        padding: 0;
-        margin: 0;
+        position: relative; /* relatif pour occuper toute la largeur */
+        width: 100%; /* largeur imprimable */
+        max-width: 420mm; /* largeur A2 */
+        min-height: 594mm; /* hauteur A2 */
+        margin: 0 auto; /* centrer horizontalement */
+        padding: 20mm; /* marges */
         border: none;
+        box-shadow: none;
+        background: #fff;
+        color: #000;
+        font-family: Arial, sans-serif;
     }
 
     /* Masquer les boutons */
-    .print\:hidden {
+    .receipt-print .print\:hidden {
         display: none !important;
+    }
+}
+
+/* =========================
+   MODE IMPRESSION - ATTESTATION (A4)
+========================= */
+@media print {
+    /* Masquer tout par défaut */
+    body * {
+        visibility: hidden;
+        font-size: 6pt; /* <- ajuste ici selon le besoin */
+        line-height: 1.5; /* espace entre lignes pour lisibilité */
+    }
+
+    .attestation-print img {
+        height: 50px; /* réduire la hauteur à l'impression */
+        width: auto; /* conserver les proportions */
+        margin-bottom: 10px; /* espace sous le logo */
+    }
+
+    /* Afficher uniquement l'attestation */
+    .attestation-print,
+    .attestation-print * {
+        visibility: visible;
+    }
+
+    /* Forcer la taille A4 et position */
+    .attestation-print {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 210mm; /* Largeur A4 */
+        height: 297mm; /* Hauteur A4 */
+        margin: 0;
+        padding: 0mm; /* Marges */
+        border: none;
+        box-shadow: none;
+        background: #fff;
+    }
+
+    /* Cibler le bloc "Fait à..." dans l'attestation */
+    .attestation-print .text-right {
+        text-align: center; /* garde l'alignement à droite */
+        font-size: 14pt; /* augmenter la taille pour l'impression */
+        margin-top: 50px; /* espace depuis le contenu */
+    }
+
+    .attestation-print .text-right p {
+        margin: 0; /* réduire les marges par défaut */
+        line-height: 1.5; /* meilleure lisibilité */
+    }
+
+    .attestation-print .text-right .font-semibold {
+        font-weight: bold; /* accentuer "Le Directeur" */
+        font-size: 16pt; /* encore plus visible */
+    }
+
+    /* Masquer le bouton imprimer */
+    .attestation-print .print\:hidden {
+        display: none !important;
+    }
+
+    /* Forcer le texte en noir et police lisible */
+    .attestation-print {
+        color: #000;
+        font-family: Arial, sans-serif;
     }
 }

@@ -2,29 +2,29 @@
 
     {{-- Alertes --}}
     @if (session()->has('success'))
-        <div class="bg-green-100 text-green-800 px-4 py-2 rounded shadow">
+        <div class="px-4 py-2 text-green-800 bg-green-100 rounded shadow">
             {{ session('success') }}
         </div>
     @endif
 
     @if (session()->has('error'))
-        <div class="bg-red-100 text-red-800 px-4 py-2 rounded shadow">
+        <div class="px-4 py-2 text-red-800 bg-red-100 rounded shadow">
             {{ session('error') }}
         </div>
     @endif
 
     {{-- En-tête et filtres --}}
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <h2 class="text-xl font-semibold">Liste des inscriptions</h2>
         <button
-            class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded"
+            class="px-4 py-2 text-white bg-indigo-600 rounded hover:bg-indigo-700"
             wire:click="toggleModal">
             + Nouvelle inscription
         </button>
     </div>
 
 {{-- Filtres --}}
-<div class="bg-white p-4 rounded-lg shadow-md flex flex-col md:flex-row gap-4 flex-wrap">
+<div class="flex flex-col flex-wrap gap-4 p-4 bg-white rounded-lg shadow-md md:flex-row">
 
     {{-- Recherche textuelle --}}
     <div class="flex flex-col flex-1 min-w-[200px]">
@@ -32,7 +32,7 @@
         <input
             type="text"
             placeholder="Nom, prénom, matricule..."
-            class="border rounded px-3 py-2 w-full"
+            class="w-full px-3 py-2 border rounded"
             wire:model.live="filter_search"
         />
     </div>
@@ -40,7 +40,7 @@
     {{-- Statut inscription --}}
     <div class="flex flex-col min-w-[180px]">
         <label class="mb-1 font-medium text-gray-700">Statut inscription</label>
-        <select class="border rounded px-3 py-2 w-full" wire:model.live="filter_statut">
+        <select class="w-full px-3 py-2 border rounded" wire:model.live="filter_statut">
             <option value="">-- Tous --</option>
             <option value="en_attente">En attente</option>
             <option value="validee">Validée</option>
@@ -53,7 +53,7 @@
     {{-- Année académique --}}
     <div class="flex flex-col min-w-[180px]">
         <label class="mb-1 font-medium text-gray-700">Année académique</label>
-        <select class="border rounded px-3 py-2 w-full" wire:model.live="filter_academic_year">
+        <select class="w-full px-3 py-2 border rounded" wire:model.live="filter_academic_year">
             <option value="">-- Toutes --</option>
             @foreach($academicYears as $year)
                 <option value="{{ $year->id }}">{{ $year->libelle }}</option>
@@ -64,7 +64,7 @@
     {{-- Niveau --}}
     <div class="flex flex-col min-w-[180px]">
         <label class="mb-1 font-medium text-gray-700">Niveau</label>
-        <select class="border rounded px-3 py-2 w-full" wire:model.live="filter_level">
+        <select class="w-full px-3 py-2 border rounded" wire:model.live="filter_level">
             <option value="">-- Tous --</option>
             @foreach($levels as $level)
                 <option value="{{ $level->id }}">{{ $level->name }}</option>
@@ -75,7 +75,7 @@
     {{-- Programme (Filière) --}}
     <div class="flex flex-col min-w-[180px]">
         <label class="mb-1 font-medium text-gray-700">Filière</label>
-        <select class="border rounded px-3 py-2 w-full" wire:model.live="filter_program">
+        <select class="w-full px-3 py-2 border rounded" wire:model.live="filter_program">
             <option value="">-- Toutes --</option>
             @foreach($programs as $program)
                 <option value="{{ $program->id }}">{{ $program->name }}</option>
@@ -87,8 +87,8 @@
 
 
     {{-- Tableau des inscriptions --}}
-    <div class="bg-white p-6 rounded-lg shadow-md mt-4 overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200 text-sm">
+    <div class="p-6 mt-4 overflow-x-auto bg-white rounded-lg shadow-md">
+        <table class="min-w-full text-sm divide-y divide-gray-200">
             <thead class="bg-gray-100">
                 <tr>
                     <th class="px-4 py-2 text-left">Étudiant</th>
@@ -143,19 +143,39 @@
                             </span>
                         </td>
                         <td class="px-4 py-2">{{ $enroll->date_inscription?->format('d/m/Y') }}</td>
-                        <td class="px-4 py-2 space-x-2">
-                            <button
-                                x-data
-                                @click.prevent="
-                                    if (confirm('Voulez-vous vraiment annuler cette inscription ?')) {
-                                        $wire.cancelEnrollment({{ $enroll->id }});
-                                    }
-                                "
-                                class="px-2 py-1 text-white bg-red-600 rounded hover:bg-red-700"
-                            >
-                                Annuler
-                            </button>
+
+                        <td class="px-4 py-2">
+                            <div class="flex items-center gap-2">
+
+                                {{-- ❌ Annuler --}}
+                                <button
+                                    x-data
+                                    @click.prevent="
+                                        if (confirm('Voulez-vous vraiment annuler cette inscription ?')) {
+                                            $wire.cancelEnrollment({{ $enroll->id }});
+                                        }
+                                    "
+                                    title="Annuler l'inscription"
+                                    class="inline-flex items-center px-3 py-1.5 text-sm text-white bg-red-600 rounded hover:bg-red-700 transition"
+                                >
+                                    ❌
+                                </button>
+
+                                {{-- 📜 Attestation --}}
+                                @if($enroll->statut === 'validee')
+                                    <a
+                                        href="{{ route('admin.enrollments.attestation', ['enrollmentId' => $enroll->id]) }}"
+                                        title="Voir l’attestation d'inscription"
+                                        class="inline-flex items-center justify-center text-white transition bg-blue-600 rounded w-9 h-9 hover:bg-blue-700"
+                                    >
+                                        📜
+                                    </a>
+                                @endif
+
+
+                            </div>
                         </td>
+
                     </tr>
                 @empty
                     <tr>
@@ -170,26 +190,26 @@
 
     {{-- Modal Nouvelle inscription --}}
     <div
-        class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
         x-data="{ open: @entangle('showModal') }"
         x-show="open"
         x-transition
     >
-        <div class="bg-white rounded-lg shadow-lg w-full max-w-lg p-6 relative">
+        <div class="relative w-full max-w-lg p-6 bg-white rounded-lg shadow-lg">
 
             {{-- Close button --}}
             <button
-                class="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+                class="absolute text-gray-500 top-3 right-3 hover:text-gray-700"
                 @click="open = false"
             >&times;</button>
 
-            <h2 class="text-lg font-semibold mb-4">Nouvelle inscription</h2>
+            <h2 class="mb-4 text-lg font-semibold">Nouvelle inscription</h2>
 
             <form wire:submit.prevent="submit" class="space-y-4">
                 {{-- Étudiant --}}
                 <div>
-                    <label class="block font-medium mb-1">Étudiant</label>
-                    <select wire:model="student_id" class="w-full border rounded px-3 py-2">
+                    <label class="block mb-1 font-medium">Étudiant</label>
+                    <select wire:model="student_id" class="w-full px-3 py-2 border rounded">
                         <option value="">-- Choisir un étudiant --</option>
                         @foreach ($students as $student)
                             <option value="{{ $student->id }}">
@@ -197,58 +217,58 @@
                             </option>
                         @endforeach
                     </select>
-                    @error('student_id') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
+                    @error('student_id') <span class="text-sm text-red-600">{{ $message }}</span> @enderror
                 </div>
 
                 {{-- Année académique --}}
                 <div>
-                    <label class="block font-medium mb-1">Année académique</label>
-                    <select wire:model="academic_year_id" class="w-full border rounded px-3 py-2">
+                    <label class="block mb-1 font-medium">Année académique</label>
+                    <select wire:model="academic_year_id" class="w-full px-3 py-2 border rounded">
                         <option value="">-- Choisir l'année --</option>
                         @foreach ($academicYears as $year)
                             <option value="{{ $year->id }}">{{ $year->libelle }}</option>
                         @endforeach
                     </select>
-                    @error('academic_year_id') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
+                    @error('academic_year_id') <span class="text-sm text-red-600">{{ $message }}</span> @enderror
                 </div>
 
                 {{-- Filière --}}
                 <div>
-                    <label class="block font-medium mb-1">Filière (Programme)</label>
-                    <select wire:model="program_id" class="w-full border rounded px-3 py-2">
+                    <label class="block mb-1 font-medium">Filière (Programme)</label>
+                    <select wire:model="program_id" class="w-full px-3 py-2 border rounded">
                         <option value="">-- Choisir une filière --</option>
                         @foreach ($programs as $program)
                             <option value="{{ $program->id }}">{{ $program->name }}</option>
                         @endforeach
                     </select>
-                    @error('program_id') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
+                    @error('program_id') <span class="text-sm text-red-600">{{ $message }}</span> @enderror
                 </div>
 
                 {{-- Niveau --}}
                 <div>
-                    <label class="block font-medium mb-1">Niveau</label>
-                    <select wire:model="level_id" class="w-full border rounded px-3 py-2">
+                    <label class="block mb-1 font-medium">Niveau</label>
+                    <select wire:model="level_id" class="w-full px-3 py-2 border rounded">
                         <option value="">-- Choisir un niveau --</option>
                         @foreach ($levels as $level)
                             <option value="{{ $level->id }}">{{ $level->name }}</option>
                         @endforeach
                     </select>
-                    @error('level_id') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
+                    @error('level_id') <span class="text-sm text-red-600">{{ $message }}</span> @enderror
                 </div>
 
                 {{-- Mode d'étude --}}
                 <div>
-                    <label class="block font-medium mb-1">Mode d'étude</label>
-                    <select wire:model="mode_etude" class="w-full border rounded px-3 py-2">
+                    <label class="block mb-1 font-medium">Mode d'étude</label>
+                    <select wire:model="mode_etude" class="w-full px-3 py-2 border rounded">
                         <option value="">-- Choisir --</option>
                         <option value="presentiel">Présentiel</option>
                         <option value="en_ligne">En ligne</option>
                     </select>
-                    @error('mode_etude') <span class="text-red-600 text-sm">{{ $message }}</span> @enderror
+                    @error('mode_etude') <span class="text-sm text-red-600">{{ $message }}</span> @enderror
                 </div>
 
                 {{-- Bouton --}}
-                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded">
+                <button type="submit" class="w-full px-4 py-2 text-white bg-indigo-600 rounded hover:bg-indigo-700">
                     Enregistrer l'inscription
                 </button>
 
