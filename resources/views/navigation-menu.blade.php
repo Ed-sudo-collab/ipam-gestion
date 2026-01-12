@@ -19,7 +19,7 @@
 
 
                 @can('gestion.utilisateur')
-                 <x-nav-link href="{{ route('admin.users.index') }}" :active="request()->routeIs('admin.users.*')">
+                 <x-nav-link href="{{ route('admin.users.index') }}" :active="request()->routeIs(['admin.users.*', 'admin.roles.*'])">
                    {{ __('Utilisateurs') }}
                   </x-nav-link>
                 @endcan
@@ -27,14 +27,14 @@
 
 
                 @can('manage-programs')
-                 <x-nav-link href="{{ route('admin.programs.index') }}" :active="request()->routeIs('admin.programs.*')">
+                 <x-nav-link href="{{ route('admin.programs.index') }}" :active="request()->routeIs(['admin.programs.*','admin.levels.*','admin.academicYears.*'])">
                    {{ __('Gestion académiques') }}
                   </x-nav-link>
                 @endcan
 
 
                 @can('manage-students')
-                 <x-nav-link href="{{ route('admin.students.index') }}" :active="request()->routeIs('admin.students.*')">
+                 <x-nav-link href="{{ route('admin.students.index') }}" :active="request()->routeIs(['admin.students.*','admin.studentStatut.*'])">
                    {{ __('Gestion des étudiants') }}
                   </x-nav-link>
                 @endcan
@@ -52,7 +52,7 @@
 
 
                 @can('manage-enrollments')
-                 <x-nav-link href="{{ route('admin.tuitionFees.index') }}" :active="request()->routeIs('admin.tuitionFees.*')">
+                 <x-nav-link href="{{ route('admin.tuitionFees.index') }}" :active="request()->routeIs(['admin.tuitionFees.*','admin.tuitionInstallments.*'])">
                    {{ __('Frais de scolarité et échéances') }}
                   </x-nav-link>
                 @endcan
@@ -62,33 +62,10 @@
 
 
                 @can('manage-enrollments')
-                 <x-nav-link href="{{ route('admin.payements.index') }}" :active="request()->routeIs('admin.payements.*')">
+                 <x-nav-link href="{{ route('admin.payements.index') }}" :active="request()->routeIs(['admin.payements.*','admin.finance.*','admin.paymentHistoriq.*'])">
                    {{ __('Gestion des paiements') }}
                   </x-nav-link>
                 @endcan
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

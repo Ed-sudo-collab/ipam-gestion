@@ -1,6 +1,6 @@
 <x-app-layout>
     <!-- Menu horizontal Admin -->
-    <div class="sticky top-16 z-50 mb-6 border-b border-gray-200 bg-white">
+    <div class="sticky z-50 mb-0 bg-white border-b border-gray-200 top-16">
         <nav class="flex space-x-4" aria-label="Tabs">
             <!-- Gestion des étudiants -->
             <a href="{{ route('admin.students.index') }}"
@@ -33,7 +33,7 @@
     </div>
 
     <!-- Contenu spécifique -->
-    <div class="p-6 bg-white rounded-lg shadow">
+    <div >
         {{ $slot }}
     </div>
 </x-app-layout>
