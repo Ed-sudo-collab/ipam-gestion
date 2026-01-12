@@ -1,6 +1,6 @@
 <x-app-layout>
     <!-- Menu horizontal Admin -->
-    <div class="mb-6 border-b border-gray-200">
+    <div class="sticky top-16 z-50 mb-6 border-b border-gray-200 bg-white">
         <nav class="flex space-x-4" aria-label="Tabs">
             <!-- Gestion des étudiants -->
             <a href="{{ route('admin.students.index') }}"

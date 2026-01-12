@@ -33,10 +33,9 @@ Route::get('/', function () {
 
 // Dashboard – accessible uniquement aux utilisateurs connectés et actifs
 Route::middleware(['auth', IsActive::class])
-    ->get('/dashboard', function () {
-        return view('dashboard');
-    })
+    ->get('/dashboard', [\App\Http\Controllers\Admin\Dashboard::class, 'index'])
     ->name('dashboard');
+
 
 
 // =========================

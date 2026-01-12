@@ -1,7 +1,7 @@
 <x-app-layout>
     <!-- Menu horizontal Admin -->
-    <div class="mb-6 border-b border-gray-200">
-        <nav class="flex space-x-4" aria-label="Tabs">
+    <div class="sticky top-16 z-50 mb-6 border-b border-gray-200 bg-white">
+        <nav class="sticky top-16 z-50  flex space-x-4" aria-label="Tabs">
             <!-- Gestion des programmes -->
             <a href="{{ route('admin.programs.index') }}"
                class="px-3 py-2 text-sm font-medium border-b-2
