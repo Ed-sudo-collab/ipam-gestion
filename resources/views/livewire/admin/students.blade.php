@@ -1,12 +1,21 @@
 <div>
      {{-- En-tête et filtres --}}
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <h2 class="text-xl font-semibold">Liste des étudiants</h2>
 
     </div>
+
+
+        {{-- Export liste des étudiants --}}
+    <a href="{{ route('admin.reports.students') }}"
+       target="_blank"
+       class="px-4 py-2 mr-2 text-white bg-blue-600 rounded hover:bg-blue-700">
+        Export Liste Étudiants (PDF)
+    </a>
+
     <br><br>
     {{-- Barre d'actions --}}
-    <div class="flex flex-col md:flex-row gap-4 mb-4">
+    <div class="flex flex-col gap-4 mb-4 md:flex-row">
 
         <!-- 🔍 Recherche -->
         <div class="flex flex-col flex-1 min-w-[200px]">
@@ -15,14 +24,14 @@
                 type="text"
                 wire:model.live="search"
                 placeholder="Nom, prénom ou matricule"
-                class="px-3 py-2 border rounded-lg w-full"
+                class="w-full px-3 py-2 border rounded-lg"
             />
         </div>
 
         <!-- 👤 Statut -->
         <div class="flex flex-col min-w-[180px]">
             <label class="mb-1 font-medium text-gray-700">Statut étudiant</label>
-            <select wire:model.live="statut_id" class="px-3 py-2 border rounded-lg w-full">
+            <select wire:model.live="statut_id" class="w-full px-3 py-2 border rounded-lg">
                 <option value="">-- Tous les statuts --</option>
                 @foreach ($statuts as $statut)
                     <option value="{{ $statut->id }}">
@@ -34,7 +43,7 @@
 
         <div class="flex flex-col min-w-[180px]">
             <a href="{{ route('admin.students.create') }}"
-            class="px-4 py-2 text-white bg-indigo-600 rounded hover:bg-indigo-700 text-center">
+            class="px-4 py-2 text-center text-white bg-indigo-600 rounded hover:bg-indigo-700">
                 + Ajouter un étudiant
             </a>
         </div>
@@ -71,12 +80,14 @@
                             @if($student->statut)
                                 @php
                                     $colors = [
-                                        'Préinscrit' => 'bg-yellow-100 text-yellow-800',
-                                        'Inscrit' => 'bg-green-100 text-green-800',
-                                        'En attente' => 'bg-orange-100 text-orange-800',
-                                        'Suspendu' => 'bg-red-100 text-red-800',
-                                        'Abandonné' => 'bg-gray-100 text-gray-800',
+                                        'Préinscrit'             => 'bg-yellow-100 text-yellow-800',
+                                        'En attente de validation'=> 'bg-orange-100 text-orange-800',
+                                        'Inscrit'                => 'bg-green-100 text-green-800',
+                                        'A jour'                 => 'bg-blue-100 text-blue-800',
+                                        'En retard de paiement'   => 'bg-red-100 text-red-800',
+                                        'En cours de paiement'   => 'bg-indigo-100 text-indigo-800',
                                     ];
+
                                     $color = $colors[$student->statut->libelle] ?? 'bg-gray-100 text-gray-800';
                                 @endphp
                                 <span class="px-2 py-1 text-xs font-semibold rounded {{ $color }}">

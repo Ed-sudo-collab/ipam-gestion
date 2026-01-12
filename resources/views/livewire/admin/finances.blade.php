@@ -4,44 +4,118 @@
         Situation financière de l’étudiant
     </h2>
 
-    {{-- Sélection étudiant --}}
-    <div>
-        <label class="font-semibold">Étudiant</label>
-        <select wire:model.change="student_id" class="w-full p-2 border rounded">
-            <option value="">-- Choisir un étudiant --</option>
-            @foreach($students as $student)
-                <option value="{{ $student->id }}">
-                    {{ $student->matricule }} — {{ $student->nom }} {{ $student->prenom }}
-                </option>
-            @endforeach
-        </select>
+
+
+@if($student_id)
+    <a
+        href="{{ route('admin.reports.student.financial', $student_id) }}"
+        target="_blank"
+        class="inline-block px-4 py-2 mt-2 text-white bg-indigo-600 rounded hover:bg-indigo-700"
+    >
+        📄 Situation financière (PDF)
+    </a>
+@endif
+
+
+
+    {{-- =========================
+     |  RECHERCHE ÉTUDIANT
+     |========================= --}}
+    <div class="relative max-w-xl">
+        <label class="block mb-1 font-semibold">
+            Rechercher un étudiant
+        </label>
+
+        <input
+            type="text"
+            wire:model.change="searchStudent"
+            placeholder="Matricule, nom ou prénom..."
+            class="w-full p-2 border rounded"
+        >
+
+        {{-- Résultats --}}
+        @if(!empty($studentsResults))
+            <div class="absolute z-10 w-full mt-1 overflow-hidden bg-white border rounded shadow">
+                @foreach($studentsResults as $student)
+                    <div
+                        wire:click="selectStudent({{ $student->id }})"
+                        class="px-3 py-2 cursor-pointer hover:bg-gray-100"
+                    >
+                        <span class="font-semibold">{{ $student->matricule }}</span>
+                        — {{ $student->nom }} {{ $student->prenom }}
+                    </div>
+                @endforeach
+            </div>
+        @endif
     </div>
 
-    {{-- Résumé par année académique --}}
+    {{-- =======================
+        IDENTITÉ ÉTUDIANT
+    ======================== --}}
+    @if(!empty($studentInfo))
+        <div class="p-4 bg-white border rounded">
+            <h3 class="mb-3 font-bold text-lg">Identité de l’étudiant</h3>
+
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div>
+                    <strong>Matricule :</strong><br>
+                    {{ $studentInfo['matricule'] }}
+                </div>
+                <div>
+                    <strong>Nom & Prénom :</strong><br>
+                    {{ $studentInfo['nom'] }} {{ $studentInfo['prenom'] }}
+                </div>
+                <div>
+                    <strong>Statut financier :</strong><br>
+                    <span class="px-2 py-1 text-sm font-semibold rounded
+                        @if($studentInfo['statut_financier'] === 'A jour')
+                            bg-green-100 text-green-700
+                        @elseif($studentInfo['statut_financier'] === 'En retard de paiement')
+                            bg-red-100 text-red-700
+                        @else
+                            bg-gray-100 text-gray-700
+                        @endif
+                    ">
+                        {{ $studentInfo['statut_financier'] }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- =======================
+        RÉSUMÉ PAR ANNÉE
+    ======================== --}}
     @forelse($summary as $yearId => $data)
         <div class="p-4 border rounded bg-gray-50" wire:key="year-{{ $yearId }}">
 
-            <h3 class="mb-3 text-lg font-bold">
+            <h3 class="mb-2 text-lg font-bold">
                 Année académique : {{ $data['label'] }}
             </h3>
 
-            {{-- Résumé total --}}
+            <p class="mb-3 text-sm text-gray-600">
+                <strong>Niveau :</strong> {{ $data['level'] }}
+            </p>
+
+            {{-- Résumé financier --}}
             <div class="grid grid-cols-1 gap-4 mb-4 sm:grid-cols-3">
                 <div>
-                    <strong>Total :</strong>
+                    <strong>Frais totaux :</strong><br>
                     {{ number_format($data['total'], 0, ',', ' ') }} FCFA
                 </div>
                 <div>
-                    <strong>Payé :</strong>
+                    <strong>Montant payé :</strong><br>
                     {{ number_format($data['paid'], 0, ',', ' ') }} FCFA
                 </div>
                 <div>
-                    <strong>Reste :</strong>
+                    <strong>Reste à payer :</strong><br>
                     {{ number_format($data['remaining'], 0, ',', ' ') }} FCFA
                 </div>
             </div>
 
-            {{-- Détails des échéances --}}
+            {{-- =======================
+                DÉTAIL DES ÉCHÉANCES
+            ======================== --}}
             <table class="w-full mb-4 border">
                 <thead class="bg-gray-200">
                     <tr>
@@ -55,7 +129,9 @@
                 <tbody>
                     @forelse($feesDetails[$yearId] ?? [] as $index => $row)
                         <tr wire:key="fee-{{ $yearId }}-{{ $index }}">
-                            <td class="px-2 py-1 border">{{ $row['label'] }}</td>
+                            <td class="px-2 py-1 border">
+                                {{ \Carbon\Carbon::parse($row['due_date'])->format('d/m/Y') }}
+                            </td>
                             <td class="px-2 py-1 border">
                                 {{ number_format($row['amount'], 0, ',', ' ') }}
                             </td>
@@ -86,7 +162,9 @@
                 </tbody>
             </table>
 
-            {{-- Historique des paiements (via allocations) --}}
+            {{-- =======================
+                HISTORIQUE DES PAIEMENTS
+            ======================== --}}
             @if(!empty($paymentsHistory[$yearId]))
                 <div class="p-4 bg-white border rounded">
                     <h4 class="mb-2 font-semibold">
@@ -98,7 +176,7 @@
                             <tr>
                                 <th class="px-2 py-1 border">Date</th>
                                 <th class="px-2 py-1 border">Échéance</th>
-                                <th class="px-2 py-1 border">Montant affecté</th>
+                                <th class="px-2 py-1 border">Montant</th>
                                 <th class="px-2 py-1 border">Méthode</th>
                             </tr>
                         </thead>

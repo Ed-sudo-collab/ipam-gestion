@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\PayementController;
 use App\Http\Controllers\Admin\TuitionFeeController;
 use App\Http\Controllers\Admin\TuitionInstallmentController;
 use App\Http\Controllers\Admin\PaymentHistoriq;
+use App\Http\Controllers\Admin\ReportController;
 use App\Http\Middleware\IsActive;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\CheckPermission;
@@ -172,4 +173,18 @@ Route::middleware(['auth', IsActive::class, CheckPermission::class . ':manage-st
         Route::get('/payment-historiq/{paymentId}', [PaymentHistoriq::class, 'show'])
             ->name('paymentHistoriq.show');
 
-    });
+
+        // 📄 EXPORT PDF — Liste des étudiants
+        Route::get('reports/students', [ReportController::class, 'students'])
+            ->name('reports.students');
+
+        // 📄 EXPORT PDF — État des paiements
+        Route::get('reports/payments', [ReportController::class, 'payments'])
+            ->name('reports.payments');
+
+        // 📄 EXPORT PDF — Situation financière d’un étudiant
+        Route::get('reports/student/{student}', [ReportController::class, 'studentFinancial'])
+            ->name('reports.student.financial');
+
+
+            });

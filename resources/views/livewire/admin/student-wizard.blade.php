@@ -1,6 +1,6 @@
 <div class="max-w-5xl p-6 mx-auto bg-white shadow-lg rounded-xl">
     <h2 class="mb-6 text-2xl font-bold text-gray-800">
-        Inscription Étudiant - Étape {{ $step }}/4
+        Création d'un dossier étudiant - Étape {{ $step }}/4
     </h2>
 
     {{-- Message flash --}}

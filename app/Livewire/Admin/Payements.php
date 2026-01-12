@@ -140,6 +140,11 @@ class Payements extends Component
             if ($remainingAmount > 0) {
                 throw new \Exception("Le montant dépasse la dette totale.");
             }
+
+            // 🔹 MISE À JOUR DU STATUT FINANCIER DE L'ÉTUDIANT
+            $student->updateFinancialStatus();
+
+
         });
 
         session()->flash('success', 'Paiement enregistré et inscription mise à jour.');

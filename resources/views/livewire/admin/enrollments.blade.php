@@ -23,6 +23,16 @@
         </button>
     </div>
 
+        {{-- Export liste des étudiants --}}
+   <p>
+        <a href="{{ route('admin.reports.students') }}"
+       target="_blank"
+       class="px-4 py-2 mr-2 text-white bg-blue-600 rounded hover:bg-blue-700">
+        Export Liste Étudiants (PDF)
+    </a>
+   </p>
+
+
 {{-- Filtres --}}
 <div class="flex flex-col flex-wrap gap-4 p-4 bg-white rounded-lg shadow-md md:flex-row">
 
@@ -110,12 +120,14 @@
                             <span class="px-2 py-1 rounded text-xs font-semibold
                                 @php
                                     $colors = [
-                                        'Préinscrit' => 'bg-yellow-100 text-yellow-800',
-                                        'Inscrit' => 'bg-green-100 text-green-800',
-                                        'En attente de validation' => 'bg-orange-100 text-orange-800',
-                                        'A jour' => 'bg-blue-100 text-blue-800',
-                                        'En retard de payement' => 'bg-red-100 text-red-800',
+                                        'Préinscrit'             => 'bg-yellow-100 text-yellow-800',
+                                        'En attente de validation'=> 'bg-orange-100 text-orange-800',
+                                        'Inscrit'                => 'bg-green-100 text-green-800',
+                                        'A jour'                 => 'bg-blue-100 text-blue-800',
+                                        'En retard de paiement'   => 'bg-red-100 text-red-800',
+                                        'En cours de paiement'   => 'bg-indigo-100 text-indigo-800',
                                     ];
+
                                     echo $colors[$enroll->student->statut->libelle ?? ''] ?? 'bg-gray-100 text-gray-800';
                                 @endphp
                             ">
@@ -207,18 +219,46 @@
 
             <form wire:submit.prevent="submit" class="space-y-4">
                 {{-- Étudiant --}}
-                <div>
+                {{-- Étudiant (recherche dynamique) --}}
+                <div class="relative">
                     <label class="block mb-1 font-medium">Étudiant</label>
-                    <select wire:model="student_id" class="w-full px-3 py-2 border rounded">
-                        <option value="">-- Choisir un étudiant --</option>
-                        @foreach ($students as $student)
-                            <option value="{{ $student->id }}">
-                                {{ $student->nom }} {{ $student->prenom }}
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('student_id') <span class="text-sm text-red-600">{{ $message }}</span> @enderror
+
+                    <input
+                        type="text"
+                        wire:model.debounce.300ms="student_search"
+                        placeholder="Nom, prénom ou matricule..."
+                        class="w-full px-3 py-2 border rounded"
+                    >
+
+                    {{-- Liste résultats --}}
+                    @if(!empty($filteredStudents))
+                        <ul class="absolute z-50 w-full mt-1 bg-white border rounded shadow max-h-48 overflow-y-auto">
+                            @foreach($filteredStudents as $student)
+                                <li
+                                    wire:click="selectStudent({{ $student->id }})"
+                                    class="px-3 py-2 cursor-pointer hover:bg-indigo-100"
+                                >
+                                    {{ $student->nom }} {{ $student->prenom }}
+                                    <span class="text-sm text-gray-500">
+                                        ({{ $student->matricule }})
+                                    </span>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
+
+                    {{-- Étudiant sélectionné --}}
+                    @if($student_id)
+                        <p class="mt-1 text-sm text-green-600">
+                            ✔ Étudiant sélectionné
+                        </p>
+                    @endif
+
+                    @error('student_id')
+                        <span class="text-sm text-red-600">{{ $message }}</span>
+                    @enderror
                 </div>
+
 
                 {{-- Année académique --}}
                 <div>

@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\TuitionInstallment; // <--- ici
+use Carbon\Carbon;
 
 class Student extends Model
 {
@@ -36,6 +38,43 @@ class Student extends Model
 
         return 'ETU-' . date('Y') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
     }
+
+
+
+    /**
+     * Met à jour le statut financier de l'étudiant
+     */
+
+
+    public function updateFinancialStatus(): void
+    {
+        // Récupérer toutes les échéances liées à l'étudiant dont la date est <= aujourd'hui
+        $dueInstallments = TuitionInstallment::whereHas('tuitionFee.enrollments', function ($q) {
+                $q->where('student_id', $this->id);
+            })
+            ->whereDate('due_date', '<=', Carbon::today())
+            ->get();
+
+        // Vérifier s'il existe AU MOINS une échéance non totalement payée par cet étudiant
+        $hasUnpaidDueInstallment = $dueInstallments->contains(function ($installment) {
+            $paidAmount = $installment->paymentAllocations()
+                ->whereHas('payment', function ($q) {
+                    $q->where('student_id', $this->id);
+                })
+                ->sum('amount');
+
+            return $paidAmount < $installment->amount;
+        });
+
+        // Mise à jour du statut financier
+        $this->statut_id = $hasUnpaidDueInstallment
+            ? 5 // En retard de paiement
+            : 4; // À jour
+
+        $this->save();
+    }
+
+
 
     // Relations
 

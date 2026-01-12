@@ -22,10 +22,16 @@ class Students extends Component
     public function mount()
     {
         $this->statuts = StudentStatut::orderBy('libelle')->get();
+
+        // 🔹 Mise à jour des statuts financiers à l'ouverture du composant
+        Student::all()->each->updateFinancialStatus();
     }
 
     public function render()
     {
+        // 🔹 On peut aussi mettre à jour avant de récupérer la pagination
+        // Student::all()->each->updateFinancialStatus(); // optionnel si mount suffit
+
         $students = Student::query()
             ->with('statut')
 

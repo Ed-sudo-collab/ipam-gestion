@@ -18,6 +18,14 @@
         </div>
     @endif
 
+
+        {{-- Export état des paiements --}}
+    <a href="{{ route('admin.reports.payments') }}"
+       target="_blank"
+       class="px-4 py-2 mr-2 text-white bg-green-600 rounded hover:bg-green-700">
+        Export État des Paiements (PDF)
+    </a>
+
     {{-- 🔍 RECHERCHE RAPIDE --}}
     <div class="flex flex-col gap-4 md:flex-row md:items-end">
         <div class="w-full md:w-1/2">

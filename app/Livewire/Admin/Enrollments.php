@@ -14,6 +14,13 @@ use Illuminate\Database\Eloquent\Builder;
 
 class Enrollments extends Component
 {
+
+    // 🔍 Recherche étudiant dans la modal
+    public $student_search = '';
+    public $filteredStudents = [];
+
+
+
     // 🔹 Listes pour le formulaire et les filtres
     public $students;
     public $academicYears;
@@ -96,7 +103,7 @@ class Enrollments extends Component
             ]);
 
             $statutInscrit = StudentStatut::firstOrCreate(
-                ['libelle' => 'Inscrit'],
+                ['libelle' => 'En cours de paiement'],
                 ['type' => 'systeme', 'modifiable' => false]
             );
 
@@ -176,6 +183,33 @@ class Enrollments extends Component
         if (str_starts_with($property, 'filter_')) {
             $this->loadEnrollments();
         }
+    }
+
+
+    public function updatedStudentSearch()
+    {
+        if (strlen($this->student_search) < 2) {
+            $this->filteredStudents = [];
+            return;
+        }
+
+        $this->filteredStudents = Student::where('nom', 'like', "%{$this->student_search}%")
+            ->orWhere('prenom', 'like', "%{$this->student_search}%")
+            ->orWhere('matricule', 'like', "%{$this->student_search}%")
+            ->limit(10)
+            ->get();
+    }
+
+
+    public function selectStudent($id)
+    {
+        $student = Student::find($id);
+
+        if (!$student) return;
+
+        $this->student_id = $student->id;
+        $this->student_search = $student->nom . ' ' . $student->prenom . ' (' . $student->matricule . ')';
+        $this->filteredStudents = [];
     }
 
 
