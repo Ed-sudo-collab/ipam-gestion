@@ -13,7 +13,7 @@ class Users extends Component
     use WithPagination;
 
     public $name, $email, $password, $password_confirmation, $status, $userId, $role_id;
-    public $roles;
+    public $roles; // liste des rôles pour le select
     public $isModalOpen = false;
 
     protected $rules = [
@@ -28,18 +28,29 @@ class Users extends Component
 
     public function mount()
     {
+        // Charger tous les rôles Spatie pour le formulaire
         $this->roles = Role::all();
     }
 
     public function render()
     {
         $users = User::with('role')->orderBy('created_at', 'desc')->paginate(10);
+
+        // Ajouter le rôle Spatie pour chaque utilisateur
+        foreach ($users as $user) {
+            $user->spatieRole = $user->getRoleNames()->first();
+        }
+
         return view('livewire.admin.users', compact('users'));
     }
 
+    // -------------------
+    // Modal
+    // -------------------
     public function openModal($id = null)
     {
         $this->resetInputFields();
+
         if ($id) {
             $user = User::findOrFail($id);
             $this->userId = $user->id;
@@ -48,6 +59,7 @@ class Users extends Component
             $this->status = $user->status;
             $this->role_id = $user->role_id;
         }
+
         $this->isModalOpen = true;
     }
 
@@ -67,11 +79,15 @@ class Users extends Component
         $this->role_id = null;
     }
 
+    // -------------------
+    // Création / Mise à jour
+    // -------------------
     public function saveUser()
     {
         $rules = $this->rules;
 
         if ($this->userId) {
+            // Pour l'édition, email unique sauf pour cet utilisateur
             $rules['email'] = 'required|email|unique:users,email,' . $this->userId;
             $rules['password'] = 'nullable|min:8|confirmed';
         }
@@ -86,11 +102,12 @@ class Users extends Component
                 'status' => $this->status,
                 'role_id' => $this->role_id,
             ]);
+
             if ($this->password) {
                 $user->update(['password' => Hash::make($this->password)]);
             }
         } else {
-            User::create([
+            $user = User::create([
                 'name' => $this->name,
                 'email' => $this->email,
                 'status' => $this->status,
@@ -99,11 +116,22 @@ class Users extends Component
             ]);
         }
 
+        // 🔑 Synchroniser le rôle avec Spatie
+        if ($this->role_id) {
+            $role = Role::find($this->role_id);
+            if ($role) {
+                $user->syncRoles([$role->name]);
+            }
+        }
+
         session()->flash('message', $this->userId ? 'Utilisateur mis à jour.' : 'Utilisateur créé avec succès.');
         $this->closeModal();
         $this->resetInputFields();
     }
 
+    // -------------------
+    // Bloquer / Activer
+    // -------------------
     public function blockUser($id)
     {
         $user = User::findOrFail($id);

@@ -5,67 +5,84 @@
             <div class="flex">
                 <!-- Logo -->
                 <div class="flex items-center shrink-0">
-                    <a href="{{ route('dashboard') }}">
+
                         <x-application-mark class="block w-auto h-9" />
-                    </a>
+
                 </div>
+
+
+
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     <!-- Dashboard -->
-                    <x-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
-                    </x-nav-link>
+
+                            @can('manage-dashboard')
+                            <x-nav-link href="{{ route('dashboard') }}" :active="request()->routeIs('dashboard')">
+                                {{ __('Dashboard') }}
+                            </x-nav-link>
+                            @endcan
 
 
-                @can('gestion.utilisateur')
-                 <x-nav-link href="{{ route('admin.users.index') }}" :active="request()->routeIs(['admin.users.*', 'admin.roles.*'])">
-                   {{ __('Utilisateurs') }}
-                  </x-nav-link>
-                @endcan
-
-
-
-                @can('manage-programs')
-                 <x-nav-link href="{{ route('admin.programs.index') }}" :active="request()->routeIs(['admin.programs.*','admin.levels.*','admin.academicYears.*'])">
-                   {{ __('Gestion académiques') }}
-                  </x-nav-link>
-                @endcan
-
-
-                @can('manage-students')
-                 <x-nav-link href="{{ route('admin.students.index') }}" :active="request()->routeIs(['admin.students.*','admin.studentStatut.*'])">
-                   {{ __('Gestion des étudiants') }}
-                  </x-nav-link>
-                @endcan
-
-
-                @can('manage-students')
-                 <x-nav-link href="{{ route('admin.enrollments.index') }}" :active="request()->routeIs('admin.enrollments.*')">
-                   {{ __('Gestion des inscriptions') }}
-                  </x-nav-link>
-                @endcan
+                            @can('gestion.utilisateur')
+                                <x-nav-link href="{{ route('admin.users.index') }}"
+                                    :active="request()->routeIs(['admin.users.*','admin.roles.*'])">
+                                    {{ __('Utilisateurs') }}
+                                </x-nav-link>
+                            @endcan
 
 
 
 
-
-
-                @can('manage-enrollments')
-                 <x-nav-link href="{{ route('admin.tuitionFees.index') }}" :active="request()->routeIs(['admin.tuitionFees.*','admin.tuitionInstallments.*'])">
-                   {{ __('Frais de scolarité et échéances') }}
-                  </x-nav-link>
-                @endcan
-
-
+                            @canany(['manage-programs','manage-academic-years','manage-levels'])
+                                <x-nav-link href="{{ route('admin.programs.index') }}"
+                                    :active="request()->routeIs(['admin.programs.*','admin.levels.*','admin.academicYears.*'])">
+                                    {{ __('Gestion académiques') }}
+                                </x-nav-link>
+                            @endcanany
 
 
 
-                @can('manage-enrollments')
-                 <x-nav-link href="{{ route('admin.payements.index') }}" :active="request()->routeIs(['admin.payements.*','admin.finance.*','admin.paymentHistoriq.*'])">
-                   {{ __('Gestion des paiements') }}
-                  </x-nav-link>
-                @endcan
+                            @can('manage-students')
+                                <x-nav-link href="{{ route('admin.students.index') }}"
+                                    :active="request()->routeIs(['admin.students.*','admin.studentStatut.*'])">
+                                    {{ __('Gestion des étudiants') }}
+                                </x-nav-link>
+                            @endcan
+
+
+                            @can('manage-enrollments')
+                            <x-nav-link href="{{ route('admin.enrollments.index') }}"
+                                :active="request()->routeIs('admin.enrollments.*')">
+                                {{ __('Gestion des inscriptions') }}
+                            </x-nav-link>
+                            @endcan
+
+
+
+
+
+
+
+                            @can('manage-fees')
+                                <x-nav-link href="{{ route('admin.tuitionFees.index') }}"
+                                    :active="request()->routeIs(['admin.tuitionFees.*','admin.tuitionInstallments.*'])">
+                                    {{ __('Frais & échéances') }}
+                                </x-nav-link>
+                            @endcan
+
+
+
+
+
+
+                            @can('manage-payments')
+                                <x-nav-link href="{{ route('admin.payements.index') }}"
+                                    :active="request()->routeIs(['admin.payements.*','admin.finance.*','admin.paymentHistoriq.*'])">
+                                    {{ __('Gestion des paiements') }}
+                                </x-nav-link>
+                            @endcan
+
 
 
 
