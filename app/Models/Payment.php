@@ -55,4 +55,9 @@ class Payment extends Model
     {
         return $this->allocations->sum('amount') >= $this->amount_paid;
     }
+
+
+
+
+
 }

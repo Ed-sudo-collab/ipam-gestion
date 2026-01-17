@@ -150,7 +150,8 @@ class StudentWizard extends Component
     {
         $this->validateStep();
 
-        $statut = StudentStatut::firstOrCreate(['libelle' => 'Préinscrit']);
+
+        $statut = StudentStatut::findOrFail(1);
 
         if (!$this->studentId) {
             // Création

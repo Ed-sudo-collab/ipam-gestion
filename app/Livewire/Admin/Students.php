@@ -23,8 +23,7 @@ class Students extends Component
     {
         $this->statuts = StudentStatut::orderBy('libelle')->get();
 
-        // 🔹 Mise à jour des statuts financiers à l'ouverture du composant
-        Student::all()->each->updateFinancialStatus();
+
     }
 
     public function render()

@@ -134,4 +134,111 @@ public function enroll($academicYear, $program, $level)
     {
         return $this->hasMany(StudentDocument::class);
     }
+
+
+
+
+
+
+
+
+
+    public function getTotalDebt(): float
+    {
+        /**
+         * 🔹 Total des échéances de scolarité de l’étudiant
+         */
+        $totalDue = TuitionInstallment::whereHas(
+            'tuitionFee.enrollments',
+            fn ($q) => $q->where('student_id', $this->id)
+        )->sum('amount');
+
+        /**
+         * 🔹 Total payé par l’étudiant (réellement affecté aux échéances)
+         */
+        $totalPaid = TuitionInstallment::whereHas(
+            'tuitionFee.enrollments',
+            fn ($q) => $q->where('student_id', $this->id)
+        )->withSum([
+            'paymentAllocations as paid_amount' => function ($q) {
+                $q->whereHas('payment', fn ($p) =>
+                    $p->where('student_id', $this->id)
+                );
+            }
+        ], 'amount')->get()->sum('paid_amount');
+
+        /**
+         * 🔹 Reste à payer
+         */
+        return max(0, $totalDue - $totalPaid);
+    }
+
+
+
+
+
+
+    public function getNextUnpaidInstallment(): ?TuitionInstallment
+    {
+        return TuitionInstallment::whereHas(
+            'tuitionFee.enrollments',
+            fn ($q) => $q->where('student_id', $this->id)
+        )
+        ->whereDate('due_date', '>=', Carbon::today())
+        ->get()
+        ->filter(fn ($inst) =>
+            $inst->getRemainingAmountForStudent($this->id) > 0
+        )
+        ->sortBy('due_date')
+        ->first();
+    }
+
+
+
+
+
+    public function shouldReceiveInstallmentReminder(int $daysBefore = 7): bool
+    {
+        $installment = $this->getNextUnpaidInstallment();
+
+        if (!$installment) {
+            return false;
+        }
+
+        $today = now()->startOfDay();
+        $limit = now()->startOfDay()->addDays($daysBefore);
+
+        // Convertir due_date en Carbon pour être sûr
+        $dueDate = Carbon::parse($installment->due_date)->startOfDay();
+
+        return $dueDate->between($today, $limit);
+    }
+
+
+
+
+
+
+
+    public function getOverdueInstallments(): \Illuminate\Support\Collection
+    {
+        // On récupère toutes les échéances non soldées dont la date est dépassée
+        return TuitionInstallment::whereHas('tuitionFee.enrollments', function ($q) {
+            $q->where('student_id', $this->id);
+        })
+        ->get()
+        ->filter(fn ($inst) => $inst->getRemainingAmountForStudent($this->id) > 0
+                            && $inst->due_date->lt(Carbon::today()));
+    }
+
+
+    public function shouldReceiveOverdueNotification(): bool
+    {
+        return $this->getOverdueInstallments()->isNotEmpty();
+    }
+
+
+
+
+
 }

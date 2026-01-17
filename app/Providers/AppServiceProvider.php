@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use App\Services\WhatsApp\WhatsAppService;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -11,7 +12,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Binding du service WhatsApp pour l'injection de dépendances
+        $this->app->singleton(WhatsAppService::class, function ($app) {
+            return new WhatsAppService();
+        });
     }
 
     /**

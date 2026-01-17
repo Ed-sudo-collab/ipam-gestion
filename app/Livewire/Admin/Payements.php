@@ -8,6 +8,8 @@ use App\Models\Student;
 use App\Models\Payment;
 use App\Models\PaymentMethod;
 use App\Models\Enrollment;
+use App\Events\PaiementEnregistre;
+
 
 class Payements extends Component
 {
@@ -17,8 +19,9 @@ class Payements extends Component
     public $student_id;
     public $amount_paid;
     public $payment_method_id;
-
     public $installmentsPreview = [];
+
+
 
     public function mount()
     {
@@ -143,6 +146,24 @@ class Payements extends Component
 
             // 🔹 MISE À JOUR DU STATUT FINANCIER DE L'ÉTUDIANT
             $student->updateFinancialStatus();
+
+
+
+
+            $student = Student::findOrFail(id: $this->student_id);
+
+            $resteAPayer = $student->getTotalDebt();
+
+            event(new PaiementEnregistre(
+                $student,
+                $payment,
+                $resteAPayer
+            ));
+
+
+
+
+
 
 
         });

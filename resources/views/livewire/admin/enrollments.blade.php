@@ -1,4 +1,4 @@
-<div class="min-h-screen p-6 bg-gray-950">
+<div class="min-h-screen p-6 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
     <!-- Alertes -->
     @if (session()->has('success'))
         <div class="flex items-center gap-3 p-4 mb-6 text-green-100 bg-green-900 border border-green-700 rounded-lg">

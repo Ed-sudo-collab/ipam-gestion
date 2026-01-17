@@ -40,4 +40,26 @@ class TuitionInstallment extends Model
     {
         return $this->hasMany(PaymentAllocation::class, 'installment_id');
     }
+
+
+
+
+
+
+
+
+
+
+
+    public function getRemainingAmountForStudent(int $studentId): float
+    {
+        $paid = $this->paymentAllocations()
+            ->whereHas('payment', fn ($q) =>
+                $q->where('student_id', $studentId)
+            )
+            ->sum('amount');
+
+        return max(0, $this->amount - $paid);
+    }
+
 }

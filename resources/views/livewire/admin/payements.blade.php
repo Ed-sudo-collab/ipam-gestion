@@ -1,4 +1,4 @@
-<div class="min-h-screen p-6 bg-gray-950">
+<div class="min-h-screen p-6 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900"">
     <div class="max-w-6xl mx-auto space-y-6">
         <!-- En-tête -->
         <div class="mb-8">

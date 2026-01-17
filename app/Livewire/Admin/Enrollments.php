@@ -11,6 +11,7 @@ use App\Models\Level;
 use App\Models\StudentStatut;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Builder;
+use App\Events\InscriptionValidee;
 
 class Enrollments extends Component
 {
@@ -112,7 +113,17 @@ class Enrollments extends Component
 
             DB::commit();
 
+
+
             session()->flash('success', 'Inscription effectuée et statut étudiant mis à jour.');
+
+
+            $student = Student::findOrFail(id: $this->student_id);
+
+            // Déclenchement de l'événement
+            event(new InscriptionValidee($student));
+
+
 
             $this->reset(['student_id', 'academic_year_id', 'program_id', 'level_id', 'mode_etude']);
             $this->showModal = false;
