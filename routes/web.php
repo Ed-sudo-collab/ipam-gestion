@@ -32,8 +32,9 @@ use App\Http\Middleware\RoleRedirect;
 // Page publique
 // =========================
 Route::get('/', function () {
-    return view('welcome');
+    return view('auth.login');
 });
+
 
 // =========================
 // Dashboard et redirection (auth + rôles)
